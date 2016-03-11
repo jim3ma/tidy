@@ -1,0 +1,38 @@
+{
+	"ImportPath": "github.com/majinjing3/neaten-checkin",
+	"GoVersion": "go1.6",
+	"Deps": [
+		{
+			"ImportPath": "github.com/gin-gonic/gin",
+			"Comment": "v1.0rc1-242-g31e4401",
+			"Rev": "31e4401f017591d5e03bdd883449b6e80a305227"
+		},
+		{
+			"ImportPath": "github.com/gin-gonic/gin/binding",
+			"Comment": "v1.0rc1-242-g31e4401",
+			"Rev": "31e4401f017591d5e03bdd883449b6e80a305227"
+		},
+		{
+			"ImportPath": "github.com/gin-gonic/gin/render",
+			"Comment": "v1.0rc1-242-g31e4401",
+			"Rev": "31e4401f017591d5e03bdd883449b6e80a305227"
+		},
+		{
+			"ImportPath": "github.com/golang/protobuf/proto",
+			"Rev": "552c7b9542c194800fd493123b3798ef0a832032"
+		},
+		{
+			"ImportPath": "github.com/manucorporat/sse",
+			"Rev": "ee05b128a739a0fb76c7ebd3ae4810c1de808d6d"
+		},
+		{
+			"ImportPath": "golang.org/x/net/context",
+			"Rev": "3e5cd1ed149001198e582f9d3f5bfd564cde2896"
+		},
+		{
+			"ImportPath": "gopkg.in/go-playground/validator.v8",
+			"Comment": "v8.17.1",
+			"Rev": "014792cf3e266caff1e916876be12282b33059e0"
+		}
+	]
+}
