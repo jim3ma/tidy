@@ -1,21 +1,23 @@
 package main
 
 import (
-	"github.com/majinjing3/neaten-checkin/service"
+	"github.com/jim3mar/tidy/services/checkin"
+	"github.com/jim3mar/tidy/services"
+	//"github.com/jim3mar/basicmgo/mongo"
 )
 
-func getConfig() (service.Config, error) {
-	config := service.Config{}
-	config.ServiceHost = "127.0.0.1:8080"
-	config.MongoDBHosts = "majin.xyz:37017"
-	config.MongoAuthUser = "ci"
+func getConfig() (services.Config, error) {
+	config := services.Config{}
+	config.ServiceHost = "127.0.0.1:8088"
+	config.MongoDBHosts = "127.0.0.1:27017"
+	config.MongoAuthUser = "tidy"
 	config.MongoAuthPass = "111111"
-	config.MongoAuthDB = "test"
+	config.MongoAuthDB = "tidy"
 	return config, nil
 }
 
 func main() {
 	cfg, _ := getConfig()
-	svc := service.CheckInService{}
+	svc := checkin.Service{}
 	svc.Run(cfg)
 }
