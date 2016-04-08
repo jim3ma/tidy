@@ -16,7 +16,7 @@ type CheckInResource struct {
 
 func (cr *CheckInResource) CheckIn(c *gin.Context) {
 	now := time.Now()
-	col := cr.mongo.DB("tidy").C("tidy")
+	col := cr.mongo.DB("tidy").C("checkin")
 	content := c.PostForm("content")
 	err := col.Insert(&mod.CheckIn{
 		Id_:       bson.NewObjectId(),
@@ -36,11 +36,3 @@ func (cr *CheckInResource) CheckIn(c *gin.Context) {
 	c.JSON(200, now.Format("Mon Jan 2 15:04:05 -0700 MST 2006"))
 }
 
-func (cr *CheckInResource) QueryMouth(c *gin.Context) {
-	id, err := strconv.Atoi("3")
-	if err != nil {
-		log.Print(err)
-	}
-	log.Print(id)
-	c.JSON(200, id)
-}
