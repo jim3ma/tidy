@@ -1,5 +1,5 @@
 {
-	"ImportPath": "github.com/majinjing3/neaten-checkin",
+	"ImportPath": "github.com/jim3mar/tidy",
 	"GoVersion": "go1.6",
 	"Deps": [
 		{
@@ -22,6 +22,14 @@
 			"Rev": "552c7b9542c194800fd493123b3798ef0a832032"
 		},
 		{
+			"ImportPath": "github.com/jim3mar/basicmgo/mongo",
+			"Rev": "85053161e1dbd622d679a3552adb500b0d1369f5"
+		},
+		{
+			"ImportPath": "github.com/jim3mar/ginjsonp",
+			"Rev": "3ef110334b10a07f11774723b1dd96e840b97050"
+		},
+		{
 			"ImportPath": "github.com/manucorporat/sse",
 			"Rev": "ee05b128a739a0fb76c7ebd3ae4810c1de808d6d"
 		},
@@ -33,6 +41,26 @@
 			"ImportPath": "gopkg.in/go-playground/validator.v8",
 			"Comment": "v8.17.1",
 			"Rev": "014792cf3e266caff1e916876be12282b33059e0"
+		},
+		{
+			"ImportPath": "gopkg.in/mgo.v2",
+			"Comment": "r2016.02.04-1-gb6e2fa3",
+			"Rev": "b6e2fa371e64216a45e61072a96d4e3859f169da"
+		},
+		{
+			"ImportPath": "gopkg.in/mgo.v2/bson",
+			"Comment": "r2016.02.04-1-gb6e2fa3",
+			"Rev": "b6e2fa371e64216a45e61072a96d4e3859f169da"
+		},
+		{
+			"ImportPath": "gopkg.in/mgo.v2/internal/sasl",
+			"Comment": "r2016.02.04-1-gb6e2fa3",
+			"Rev": "b6e2fa371e64216a45e61072a96d4e3859f169da"
+		},
+		{
+			"ImportPath": "gopkg.in/mgo.v2/internal/scram",
+			"Comment": "r2016.02.04-1-gb6e2fa3",
+			"Rev": "b6e2fa371e64216a45e61072a96d4e3859f169da"
 		}
 	]
 }

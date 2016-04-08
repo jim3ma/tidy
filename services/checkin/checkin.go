@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jim3mar/basicmgo/mongo"
 	"github.com/jim3mar/tidy/services"
+	jsonp "github.com/jim3mar/ginjsonp"
 	"log"
 	"encoding/json"
 	"time"
@@ -54,13 +55,18 @@ func (s *Service) Run(cfg services.Config) error {
 		mongo: mgoSession,
 	}
 
-	route := gin.New()
-	route.Use(gin.Logger())
-	route.Use(gin.Recovery())
+	router := gin.New()
+	router.Use(gin.Logger())
+	router.Use(jsonp.Handler())
+	router.Use(gin.Recovery())
 
-	route.GET("/checkin", cr.CheckIn)
+	v1 := router.Group("/v1")
+	{
+        	v1.POST("/checkin", cr.CheckIn)
+		v1.GET("/checkin", cr.CheckIn)
+    	}
 
-	route.Run(cfg.ServiceHost)
+	router.Run(cfg.ServiceHost)
 
 	return nil
 }
