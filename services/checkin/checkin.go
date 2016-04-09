@@ -51,7 +51,7 @@ func (s *Service) Run(cfg services.Config) error {
 	v1 := router.Group("/v1")
 	{
 		v1.POST("/checkin", cr.CheckIn)
-		v1.GET("/checkin", cr.CheckIn)
+		v1.GET("/checkin", cr.ListCheckIn)
 	}
 
 	//router.Run(cfg.ServiceHost)
