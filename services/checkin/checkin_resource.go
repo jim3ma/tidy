@@ -5,8 +5,8 @@ import (
 	mod "github.com/jim3mar/tidy/models/checkin"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
-	"log"
-	"strconv"
+	//"log"
+	//"strconv"
 	"time"
 )
 
