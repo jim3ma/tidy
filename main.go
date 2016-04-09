@@ -13,7 +13,7 @@ import (
 
 func getConfig() (services.Config, error) {
 	config := services.Config{}
-	config.ServiceHost = "10.202.240.252:8089"
+	config.ServiceHost = "0.0.0.0:8089"
 	config.MongoDBHosts = "127.0.0.1:27017"
 	config.MongoAuthUser = "tidy"
 	config.MongoAuthPass = "111111"

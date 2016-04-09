@@ -1,4 +1,4 @@
-use admin;
+use tidy;
 db.createRole(
    {
      role: "tidyOpRole",
