@@ -1,44 +1,32 @@
 package checkin
 
 import (
-	"gopkg.in/mgo.v2"
+	"github.com/fvbock/endless"
 	"github.com/gin-gonic/gin"
 	"github.com/jim3mar/basicmgo/mongo"
-	"github.com/jim3mar/tidy/services"
 	jsonp "github.com/jim3mar/ginjsonp"
+	"github.com/jim3mar/tidy/services"
+	"gopkg.in/mgo.v2"
 	"log"
-	"encoding/json"
-	"time"
+	//"encoding/json"
+	//"time"
 )
 
 type Service struct {
 	mgoSession *mgo.Session
 }
 
-func (s *Service) getMgoSession(cfg services.Config) (*mgo.Session, error){
-	if bs, err := json.MarshalIndent(cfg, "", "    "); err != nil {
-		panic(err)
-	} else {
-		log.Print("Current configuration:\n" + string(bs))
-	}
-
-	mgoconfig := &mongo.MongoConfiguration{
-		Hosts:   	cfg.MongoDBHosts,
-                Database:	cfg.MongoAuthDB,
-                UserName:	cfg.MongoAuthUser,
-                Password:	cfg.MongoAuthPass,
-                Timeout: 	60 * time.Second,
-	}
-
-	if err := mongo.Startup(mgoconfig); err != nil {
-		log.Fatalf("MongoSession startup failed: %s\n", err)
-		return nil, err 
-	}
+func (s *Service) getMgoSession(cfg services.Config) (*mgo.Session, error) {
+	//if bs, err := json.MarshalIndent(cfg, "", "    "); err != nil {
+	//	panic(err)
+	//} else {
+	//	log.Print("Current configuration:\n" + string(bs))
+	//}
 
 	mgoSession, err := mongo.CopyMonotonicSession()
 	if err != nil {
 		log.Fatalf("CreateMongoSession: %s\n", err)
-		return nil, err 
+		return nil, err
 	}
 	return mgoSession, nil
 }
@@ -51,7 +39,7 @@ func (s *Service) Run(cfg services.Config) error {
 	}
 	defer mgoSession.Close()
 
-	cr := &CheckInResource{ 
+	cr := &CheckInResource{
 		mongo: mgoSession,
 	}
 
@@ -62,11 +50,12 @@ func (s *Service) Run(cfg services.Config) error {
 
 	v1 := router.Group("/v1")
 	{
-        	v1.POST("/checkin", cr.CheckIn)
-		v1.GET("/checkin", cr.CheckIn)
-    	}
+		v1.POST("/checkin", cr.CheckIn)
+		v1.GET("/checkin", cr.ListCheckIn)
+	}
 
-	router.Run(cfg.ServiceHost)
+	//router.Run(cfg.ServiceHost)
+	endless.ListenAndServe(cfg.ServiceHost, router)
 
 	return nil
 }
