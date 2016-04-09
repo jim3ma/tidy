@@ -5,6 +5,7 @@ import (
 	mod "github.com/jim3mar/tidy/models/checkin"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
+	"encoding/json"
 	"log"
 	//"strconv"
 	"time"
@@ -29,7 +30,7 @@ func (cr *CheckInResource) CheckIn(c *gin.Context) {
 		CreateHour:  now.Hour(),
 		CreateMin:   now.Minute(),
 		CreateSec:   now.Second(),
-		Timestamp:	 now.Unix(),
+		Timestamp:   now.Unix(),
 		Images:      []string{"abc.png", "xyz.png"},
 	})
 
@@ -37,7 +38,7 @@ func (cr *CheckInResource) CheckIn(c *gin.Context) {
 		panic(err)
 	}
 
-	c.JSON(200, now.Format("Mon Jan 2 15:04:05 -0700 MST 2006"))
+	c.JSON(200, now.Unix())
 }
 
 func (cr *CheckInResource) ListCheckIn(c *gin.Context) {
@@ -47,6 +48,6 @@ func (cr *CheckInResource) ListCheckIn(c *gin.Context) {
 	var ci []mod.CheckIn
 	//c.Find(bson.M{"_id": objectId}).One(&ci)
 	col.Find(nil).All(&ci)
-	log.Printf("%s", ci)
+	//log.Printf("%s", ci)
 	c.JSON(200, ci)
 }
