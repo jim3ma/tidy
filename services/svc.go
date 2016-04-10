@@ -11,3 +11,8 @@ type Config struct {
 	MongoAuthPass string `json:"mongo_passwd"`
 	MongoAuthDB   string `json:"mongo_database"`
 }
+
+type Response struct {
+	Status int `json:'status'`
+	RedirectTo string `json:redirect_to`
+}

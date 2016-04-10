@@ -5,6 +5,7 @@ import (
 	mod "github.com/jim3mar/tidy/models/checkin"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
+	"net/http"
 	//"encoding/json"
 	//"log"
 	//"strconv"
@@ -38,7 +39,8 @@ func (cr *CheckInResource) CheckIn(c *gin.Context) {
 		panic(err)
 	}
 
-	c.JSON(200, now.Unix())
+	c.Header("Access-Control-Allow-Origin", "*")
+	c.JSON(http.StatusOK, now.Unix())
 }
 
 func (cr *CheckInResource) ListCheckIn(c *gin.Context) {
@@ -49,5 +51,5 @@ func (cr *CheckInResource) ListCheckIn(c *gin.Context) {
 	//c.Find(bson.M{"_id": objectId}).One(&ci)
 	col.Find(nil).All(&ci)
 	//log.Printf("%s", ci)
-	c.JSON(200, ci)
+	c.JSON(http.StatusOK, ci)
 }
