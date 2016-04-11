@@ -4,7 +4,7 @@ import (
 	"github.com/fvbock/endless"
 	"github.com/gin-gonic/gin"
 	"github.com/jim3mar/basicmgo/mongo"
-	jsonp "github.com/jim3mar/ginjsonp"
+	jsonp "github.com/jim3mar/gin-jsonp"
 	"github.com/jim3mar/tidy/services"
 	"gopkg.in/mgo.v2"
 	"log"
