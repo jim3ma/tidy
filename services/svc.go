@@ -54,13 +54,11 @@ func (s *Service) Run(cfg Config) error {
 	}
 	defer mgoSession.Close()
 
-	svc_cr := &cr.CheckInResource{
-		Mongo: mgoSession,
-	}
+	svc_cr := &cr.CheckInResource{}
+	svc_cr.Init(mgoSession)
 
-	svc_ur := &ur.UserResource{
-		Mongo: mgoSession,
-	}
+	svc_ur := &ur.UserResource{}
+	svc_ur.Init(mgoSession)
 
 	router := gin.New()
 	router.Use(gin.Logger())
@@ -72,7 +70,8 @@ func (s *Service) Run(cfg Config) error {
 		v1.POST("/checkin", svc_cr.CheckIn)
 		v1.GET("/checkin", svc_cr.ListCheckIn)
 
-		v1.GET("/user", svc_ur.NewUser)
+		v1.GET("/user/register", svc_ur.NewUser)
+		v1.GET("/user/login", svc_ur.AuthWithPassword)
 	}
 
 	//router.Run(cfg.ServiceHost)

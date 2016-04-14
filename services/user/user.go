@@ -3,6 +3,7 @@ package user
 import (
 	"github.com/gin-gonic/gin"
 	mod "github.com/jim3mar/tidy/models/user"
+	util "github.com/jim3mar/tidy/utilities"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	"net/http"
@@ -14,22 +15,28 @@ import (
 
 type UserResource struct {
 	Mongo *mgo.Session
+	CollUser *mgo.Collection
+}
+
+func (ur *UserResource) Init(session *mgo.Session){
+	ur.Mongo = session
+	ur.CollUser = ur.Mongo.DB("tidy").C("user")
 }
 
 func (ur *UserResource) NewUser(c *gin.Context) {
 	now := time.Now()
-	col := ur.Mongo.DB("tidy").C("user")
+	//col := ur.Mongo.DB("tidy").C("user")
 	//content := c.PostForm("content")
-	err := col.Insert(&mod.User{
+	err := ur.CollUser.Insert(&mod.User{
 		Id_:          bson.NewObjectId(),
 		UserName:     "tidy",
-		Password:     "tidy",
+		Password:     util.Md5Sum("tidy"),
 		EMail:        "tidy@tidy.com",
 		CreateAt:     now,
 		Timestamp:    now.Unix(),
-                Portrait:     "avantar.png",
-                Continuous:   0,
-                //LastCheckIn:  ,
+        Portrait:     "avantar.png",
+        Continuous:   0,
+        //LastCheckIn:  ,
 	})
 
 	if err != nil {
@@ -40,3 +47,33 @@ func (ur *UserResource) NewUser(c *gin.Context) {
 	c.JSON(http.StatusOK, now.Unix())
 }
 
+type AuthReponse struct {
+	AuthToken string `json:"auth_token"`
+	UserInfo  mod.User `json:"user_info"`
+}
+
+func (ur *UserResource) AuthWithPassword(c *gin.Context) {
+    username := c.DefaultQuery("username", "")
+	password := c.DefaultQuery("password", "")
+	if username == "" || password == "" {
+		c.JSON(http.StatusForbidden, "invalid username or password")
+		return
+	}
+	password = util.Md5Sum(password)
+	user := new(mod.User)
+	err := ur.CollUser.Find(
+		bson.M{
+			"username": username,
+			"password": password,
+		}).One(&user)
+	if err != nil {
+		c.JSON(http.StatusForbidden, err)
+		return
+	}
+	c.JSON(http.StatusOK,
+		AuthReponse {
+			AuthToken: "570fb03a55cbf50efc93a728",
+			UserInfo: *user,
+		})
+	return
+}

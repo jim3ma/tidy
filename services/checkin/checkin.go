@@ -3,7 +3,7 @@ package checkin
 import (
 	"github.com/gin-gonic/gin"
 	mod "github.com/jim3mar/tidy/models/checkin"
-	"github.com/jim3mar/tidy/models/user"
+	//"github.com/jim3mar/tidy/models/user"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	"net/http"
@@ -15,18 +15,24 @@ import (
 
 type CheckInResource struct {
 	Mongo *mgo.Session
-	ColCI *mgo.Collection
-	ColUser *mgo.Collection
+	CollCI *mgo.Collection
+	CollUser *mgo.Collection
+}
+
+func (cr *CheckInResource) Init(session *mgo.Session){
+	cr.Mongo = session
+	cr.CollCI = cr.Mongo.DB("tidy").C("checkin")
+	cr.CollUser = cr.Mongo.DB("tidy").C("user")
 }
 
 func (cr *CheckInResource) CheckIn(c *gin.Context) {
 	now := time.Now()
-	col := cr.Mongo.DB("tidy").C("checkin")
 	content := c.PostForm("content")
 	auth_token := c.PostForm("auth_token")
 	// TBD
-        uid = bson.ObjectIdHex(auth_token)
-	err := col.Insert(&mod.CheckIn{
+	auth_token = "570fb03a55cbf50efc93a728"
+    uid := bson.ObjectIdHex(auth_token)
+	err := cr.CollCI.Insert(&mod.CheckIn{
 		Id_:         bson.NewObjectId(),
 		UserId:      uid,
 		Content:     content,
@@ -40,19 +46,19 @@ func (cr *CheckInResource) CheckIn(c *gin.Context) {
 		Timestamp:   now.Unix(),
 		Images:      []string{"abc.png", "xyz.png"},
 	})
-        if err != nil {
+	if err != nil {
 		panic(err)
 	}
 	//var u = new(user.User)
-	//err = cr.ColUser.Find(bson.M{"_id": uid}).One(&u)
-        err = cr.ColUser.Update(
+	//err = cr.CollUser.Find(bson.M{"_id": uid}).One(&u)
+    err = cr.CollUser.Update(
 		bson.M{
-			"_id": uid
-		}, 
+			"_id": uid,
+		},
 		bson.M{
 			"$inc": bson.M{
-					"continuous": 1
-				}
+					"continuous": 1,
+				},
 		})
 
 	if err != nil {
