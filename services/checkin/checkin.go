@@ -1,61 +1,75 @@
 package checkin
 
 import (
-	"github.com/fvbock/endless"
 	"github.com/gin-gonic/gin"
-	"github.com/jim3mar/basicmgo/mongo"
-	jsonp "github.com/jim3mar/gin-jsonp"
-	"github.com/jim3mar/tidy/services"
+	mod "github.com/jim3mar/tidy/models/checkin"
+	"github.com/jim3mar/tidy/models/user"
 	"gopkg.in/mgo.v2"
-	"log"
+	"gopkg.in/mgo.v2/bson"
+	"net/http"
 	//"encoding/json"
-	//"time"
+	//"log"
+	//"strconv"
+	"time"
 )
 
-type Service struct {
-	mgoSession *mgo.Session
+type CheckInResource struct {
+	Mongo *mgo.Session
+	ColCI *mgo.Collection
+	ColUser *mgo.Collection
 }
 
-func (s *Service) getMgoSession(cfg services.Config) (*mgo.Session, error) {
-	//if bs, err := json.MarshalIndent(cfg, "", "    "); err != nil {
-	//	panic(err)
-	//} else {
-	//	log.Print("Current configuration:\n" + string(bs))
-	//}
-
-	mgoSession, err := mongo.CopyMonotonicSession()
-	if err != nil {
-		log.Fatalf("CreateMongoSession: %s\n", err)
-		return nil, err
+func (cr *CheckInResource) CheckIn(c *gin.Context) {
+	now := time.Now()
+	col := cr.Mongo.DB("tidy").C("checkin")
+	content := c.PostForm("content")
+	auth_token := c.PostForm("auth_token")
+	// TBD
+        uid = bson.ObjectIdHex(auth_token)
+	err := col.Insert(&mod.CheckIn{
+		Id_:         bson.NewObjectId(),
+		UserId:      uid,
+		Content:     content,
+		CreateAt:    now,
+		CreateDay:   now.Day(),
+		CreateMonth: int(now.Month()),
+		CreateYear:  now.Year(),
+		CreateHour:  now.Hour(),
+		CreateMin:   now.Minute(),
+		CreateSec:   now.Second(),
+		Timestamp:   now.Unix(),
+		Images:      []string{"abc.png", "xyz.png"},
+	})
+        if err != nil {
+		panic(err)
 	}
-	return mgoSession, nil
+	//var u = new(user.User)
+	//err = cr.ColUser.Find(bson.M{"_id": uid}).One(&u)
+        err = cr.ColUser.Update(
+		bson.M{
+			"_id": uid
+		}, 
+		bson.M{
+			"$inc": bson.M{
+					"continuous": 1
+				}
+		})
+
+	if err != nil {
+		panic(err)
+	}
+
+	c.Header("Access-Control-Allow-Origin", "*")
+	c.JSON(http.StatusOK, now.Unix())
 }
 
-func (s *Service) Run(cfg services.Config) error {
-	mgoSession, err := s.getMgoSession(cfg)
-
-	if err != nil {
-		return err
-	}
-	defer mgoSession.Close()
-
-	cr := &CheckInResource{
-		mongo: mgoSession,
-	}
-
-	router := gin.New()
-	router.Use(gin.Logger())
-	router.Use(jsonp.Handler())
-	router.Use(gin.Recovery())
-
-	v1 := router.Group("/v1")
-	{
-		v1.POST("/checkin", cr.CheckIn)
-		v1.GET("/checkin", cr.ListCheckIn)
-	}
-
-	//router.Run(cfg.ServiceHost)
-	endless.ListenAndServe(cfg.ServiceHost, router)
-
-	return nil
+func (cr *CheckInResource) ListCheckIn(c *gin.Context) {
+	col := cr.Mongo.DB("tidy").C("checkin")
+	//id := c.DefaultQuery("id", "")
+	//objectId := bson.ObjectIdHex(id)
+	var ci []mod.CheckIn
+	//c.Find(bson.M{"_id": objectId}).One(&ci)
+	col.Find(nil).All(&ci)
+	//log.Printf("%s", ci)
+	c.JSON(http.StatusOK, ci)
 }

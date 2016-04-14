@@ -1,6 +1,7 @@
 package user
 
 import (
+	//"github.com/jim3mar/tidy/models/checkin
 	"gopkg.in/mgo.v2/bson"
 	"time"
 )
@@ -13,4 +14,7 @@ type User struct {
 	CreateAt  time.Time     `bson:"create_at" json:"create_at"`
 	Timestamp int64         `bson:"timestamp" json:"timestamp"`
 	Portrait  string        `bson:"portrait" json:"portrait"`
+        Continuous int          `bson:"continuous" json:"continuous"`
+        LastCheckIn interface{} `bson:"last_checkin" json:last_checkin`
 }
+

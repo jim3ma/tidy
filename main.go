@@ -3,7 +3,6 @@ package main
 import (
 	"github.com/jim3mar/basicmgo/mongo"
 	"github.com/jim3mar/tidy/services"
-	"github.com/jim3mar/tidy/services/checkin"
 	"log"
 	"os"
 	"os/signal"
@@ -37,7 +36,7 @@ func main() {
 		return
 	}
 
-	svc := checkin.Service{}
+	svc := services.Service{}
 	go func() {
 		svc.Run(cfg)
 	}()
