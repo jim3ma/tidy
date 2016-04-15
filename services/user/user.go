@@ -65,7 +65,7 @@ func (ur *UserResource) AuthWithPassword(c *gin.Context) {
 		bson.M{
 			"username": username,
 			"password": password,
-		}).One(&user)
+		}).One(user)
 	if err != nil {
 		c.JSON(http.StatusForbidden, err)
 		return
