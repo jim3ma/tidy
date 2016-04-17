@@ -1,14 +1,17 @@
 package services
 
 import (
+	"log"
+
+	"gopkg.in/mgo.v2"
+
 	"github.com/fvbock/endless"
 	"github.com/gin-gonic/gin"
 	"github.com/jim3mar/basicmgo/mongo"
 	jsonp "github.com/jim3mar/gin-jsonp"
 	cr "github.com/jim3mar/tidy/services/checkin"
 	ur "github.com/jim3mar/tidy/services/user"
-	"gopkg.in/mgo.v2"
-	"log"
+	"github.com/jim3mar/tidy/utilities"
 	//"encoding/json"
 	//"time"
 )
@@ -22,10 +25,9 @@ type Config struct {
 }
 
 type Response struct {
-	Status int `json:'status'`
+	Status     int    `json:'status'`
 	RedirectTo string `json:redirect_to`
 }
-
 
 type Service struct {
 	mgoSession *mgo.Session
@@ -64,6 +66,7 @@ func (s *Service) Run(cfg Config) error {
 	router.Use(gin.Logger())
 	router.Use(jsonp.Handler())
 	router.Use(gin.Recovery())
+	router.Use(utilities.JWTHandler())
 
 	v1 := router.Group("/v1")
 	{
