@@ -2,9 +2,10 @@ package utilities
 
 import (
 	"crypto/rsa"
-	"fmt"
 	"io/ioutil"
 	"log"
+	"net/http"
+	"net/url"
 	"time"
 
 	jwt "github.com/dgrijalva/jwt-go"
@@ -47,33 +48,73 @@ func fatal(err error) {
 	}
 }
 
+// JWTHandler is a Gin MinddleWare for JWT in tidy project
 func JWTHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var token string
+		var tokenString string
 		switch c.Request.Method {
 		case "GET":
-			token = c.DefaultQuery("token", "")
+			tokenString = c.DefaultQuery("token", "")
 		case "POST":
-			token = c.DefaultPostForm("token", "")
+			tokenString = c.DefaultPostForm("token", "")
 		default:
-			token = ""
+			tokenString = ""
 		}
-		if token == "" {
-			//c.JSON(http.StatusUnauthorized, "Empty Token")
-			token, _ = NewToken()
-			VerifyToken(token)
+
+		// for TESTING
+		tokenString, _ = NewToken(map[string]string{"uid": "tidy uid tidy-uid"})
+		// for TESTING
+
+		if tokenString == "" {
+			c.JSON(http.StatusUnauthorized, "Empty Token")
+			return
 		}
-		c.Next()
+		verified, token := VerifyToken(tokenString)
+		if verified {
+			switch c.Request.Method {
+			case "GET":
+				//log.Print(c.Request.Form)
+				//log.Print(c.Request)
+				//if c.Request.Form == nil {
+				//	log.Print("nil form data")
+				//	c.Request.Form = url.Values{}
+				//}
+				//c.Request.Form.Set("uid", token.Claims["uid"].(string))
+				// hard code
+				// TBD
+				c.Request.URL.RawQuery += "&" + "uid" + "=" + url.QueryEscape(token.Claims["uid"].(string))
+				uid := c.DefaultQuery("uid", "none")
+				log.Print(uid)
+			case "POST":
+				//log.Print(c.Request.PostForm)
+				//log.Print(c.Request)
+				if c.Request.PostForm == nil {
+					log.Print("nil postform data")
+					c.Request.PostForm = url.Values{}
+				}
+				c.Request.PostForm.Set("uid", token.Claims["uid"].(string))
+				//uid := c.DefaultPostForm("uid", "none")
+				//log.Print(uid)
+			default:
+				c.Request.Form.Set("uid", token.Claims["uid"].(string))
+			}
+			c.Next()
+			return
+		}
+		c.JSON(http.StatusUnauthorized, "Error Token")
 		return
 	}
 }
 
-func NewToken() (tokenString string, err error) {
+// NewToken generate a jwt token
+func NewToken(values map[string]string) (tokenString string, err error) {
 	// create a signer for rsa 256
 	token := jwt.New(jwt.GetSigningMethod("RS256"))
 
-	// set our claims
-	token.Claims["AccessToken"] = "level1"
+	for key, val := range values {
+		// set our claims
+		token.Claims[key] = val
+	}
 
 	// set the expire time
 	// see http://tools.ietf.org/html/draft-ietf-oauth-json-web-token-20#section-4.1.4
@@ -83,7 +124,8 @@ func NewToken() (tokenString string, err error) {
 	return
 }
 
-func VerifyToken(tokenString string) bool {
+// VerifyToken check the input token string, and return *jwt.Token for other use
+func VerifyToken(tokenString string) (bool, *jwt.Token) {
 	// validate the token
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		// since we only use the one private key to sign the tokens,
@@ -95,24 +137,24 @@ func VerifyToken(tokenString string) bool {
 	switch err.(type) {
 	case nil: // no error
 		if !token.Valid { // but may still be invalid
-			fmt.Println("WHAT? Invalid Token? F*** off!")
-			return false
+			log.Print("Invalid Token")
+			return false, nil
 		}
 		// see stdout and watch for the CustomUserInfo, nicely unmarshalled
-		log.Printf("Someone accessed resricted area! Token:%+v\n", token)
-		return true
+		log.Printf("Verified! Token:%+v\n", token)
+		return true, token
 	case *jwt.ValidationError: // something was wrong during the validation
 		vErr := err.(*jwt.ValidationError)
 		switch vErr.Errors {
 		case jwt.ValidationErrorExpired:
-			fmt.Println("Token Expired, get a new one.")
-			return false
+			log.Print("Token expired")
+			return false, nil
 		default:
 			log.Printf("ValidationError error: %+v\n", vErr.Errors)
-			return false
+			return false, nil
 		}
 	default: // something else went wrong
 		log.Printf("Token parse error: %v\n", err)
-		return false
+		return false, nil
 	}
 }

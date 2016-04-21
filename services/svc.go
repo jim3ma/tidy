@@ -25,8 +25,8 @@ type Config struct {
 }
 
 type Response struct {
-	Status     int    `json:'status'`
-	RedirectTo string `json:redirect_to`
+	Status     int    `json:"status"`
+	RedirectTo string `json:"redirect_to"`
 }
 
 type Service struct {
@@ -75,6 +75,7 @@ func (s *Service) Run(cfg Config) error {
 
 		v1.GET("/user/register", svc_ur.NewUser)
 		v1.GET("/user/login", svc_ur.AuthWithPassword)
+		v1.POST("/user/login", svc_ur.AuthWithPassword)
 	}
 
 	//router.Run(cfg.ServiceHost)
