@@ -24,6 +24,8 @@ func (ur *UserResource) Init(session *mgo.Session) {
 	ur.CollUser = ur.Mongo.DB("tidy").C("user")
 }
 
+// NewUser add a user into mongo/tidy/user
+// return current timestamp if success
 func (ur *UserResource) NewUser(c *gin.Context) {
 	now := time.Now()
 	//col := ur.Mongo.DB("tidy").C("user")
@@ -32,12 +34,12 @@ func (ur *UserResource) NewUser(c *gin.Context) {
 	password := c.PostForm("password")
 	email := c.PostForm("email")
 
-	if username == "" || password == "" {
+	if username == "" || password == "" || email == "" {
 		c.JSON(http.StatusBadRequest, "Invalid parameter")
 	}
-	log.Print(username)
-	log.Print(password)
-	log.Print(email)
+	log.Print("New username:" + username)
+	log.Print("New password" + password)
+	log.Print("New email" + email)
 	err := ur.CollUser.Insert(&mod.User{
 		Id_:        bson.NewObjectId(),
 		UserName:   username,
@@ -54,7 +56,6 @@ func (ur *UserResource) NewUser(c *gin.Context) {
 		panic(err)
 	}
 
-	c.Header("Access-Control-Allow-Origin", "*")
 	c.JSON(http.StatusOK, now.Unix())
 }
 
@@ -67,7 +68,7 @@ func (ur *UserResource) AuthWithPassword(c *gin.Context) {
 	username := c.DefaultQuery("username", "")
 	password := c.DefaultQuery("password", "")
 	if username == "" || password == "" {
-		c.JSON(http.StatusForbidden, "invalid username or password")
+		c.JSON(http.StatusBadRequest, "Invalid username or password")
 		return
 	}
 	password = util.Md5Sum(password)
@@ -81,9 +82,13 @@ func (ur *UserResource) AuthWithPassword(c *gin.Context) {
 		c.JSON(http.StatusForbidden, err)
 		return
 	}
+	tokenString, err := util.NewToken(map[string]string{"uid": user.Id_.Hex()})
+	if err != nil {
+		panic(err)
+	}
 	c.JSON(http.StatusOK,
 		AuthReponse{
-			AuthToken: "570fb03a55cbf50efc93a728",
+			AuthToken: tokenString,
 			UserInfo:  *user,
 		})
 	return

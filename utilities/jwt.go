@@ -54,15 +54,15 @@ func JWTHandler() gin.HandlerFunc {
 		var tokenString string
 		switch c.Request.Method {
 		case "GET":
-			tokenString = c.DefaultQuery("token", "")
+			tokenString = c.DefaultQuery("auth_token", "")
 		case "POST":
-			tokenString = c.DefaultPostForm("token", "")
+			tokenString = c.DefaultPostForm("auth_token", "")
 		default:
 			tokenString = ""
 		}
 
 		// for TESTING
-		tokenString, _ = NewToken(map[string]string{"uid": "tidy uid tidy-uid"})
+		//tokenString, _ = NewToken(map[string]string{"uid": "tidy uid tidy-uid"})
 		// for TESTING
 
 		if tokenString == "" {
@@ -83,8 +83,8 @@ func JWTHandler() gin.HandlerFunc {
 				// hard code
 				// TBD
 				c.Request.URL.RawQuery += "&" + "uid" + "=" + url.QueryEscape(token.Claims["uid"].(string))
-				uid := c.DefaultQuery("uid", "none")
-				log.Print(uid)
+				//uid := c.DefaultQuery("uid", "none")
+				//log.Print(uid)
 			case "POST":
 				//log.Print(c.Request.PostForm)
 				//log.Print(c.Request)
@@ -140,8 +140,7 @@ func VerifyToken(tokenString string) (bool, *jwt.Token) {
 			log.Print("Invalid Token")
 			return false, nil
 		}
-		// see stdout and watch for the CustomUserInfo, nicely unmarshalled
-		log.Printf("Verified! Token:%+v\n", token)
+		//log.Printf("Verified! Token:%+v\n", token)
 		return true, token
 	case *jwt.ValidationError: // something was wrong during the validation
 		vErr := err.(*jwt.ValidationError)
