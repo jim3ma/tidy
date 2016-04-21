@@ -38,9 +38,9 @@ func (ur *UserResource) NewUser(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, "Invalid parameter")
 	}
 	log.Print("New username:" + username)
-	log.Print("New password" + password)
-	log.Print("New email" + email)
-	err := ur.CollUser.Insert(&mod.User{
+	log.Print("New password:" + password)
+	log.Print("New email:" + email)
+	user := &mod.User{
 		ID:         bson.NewObjectId(),
 		UserName:   username,
 		Password:   util.Md5Sum(password),
@@ -50,13 +50,13 @@ func (ur *UserResource) NewUser(c *gin.Context) {
 		Portrait:   "avantar.png",
 		Continuous: 0,
 		//LastCheckIn:  ,
-	})
+	}
+	err := ur.CollUser.Insert(user)
 
 	if err != nil {
 		panic(err)
 	}
-
-	c.JSON(http.StatusOK, now.Unix())
+	ur.newTokenAndRet(c, user)
 }
 
 type AuthReponse struct {
@@ -82,6 +82,10 @@ func (ur *UserResource) AuthWithPassword(c *gin.Context) {
 		c.JSON(http.StatusForbidden, err)
 		return
 	}
+	ur.newTokenAndRet(c, user)
+}
+
+func (ur *UserResource) newTokenAndRet(c *gin.Context, user *mod.User) {
 	tokenString, err := util.NewToken(map[string]string{"uid": user.ID.Hex()})
 	if err != nil {
 		panic(err)
@@ -91,12 +95,10 @@ func (ur *UserResource) AuthWithPassword(c *gin.Context) {
 			AuthToken: tokenString,
 			UserInfo:  *user,
 		})
-	return
 }
 
 func (ur *UserResource) QueryInfo(c *gin.Context) {
 	uidString := c.DefaultQuery("uid", "")
-	log.Print("Checkin user_id: " + uidString)
 	if uidString == "" {
 		c.JSON(http.StatusBadRequest, "Empty User ID")
 		return
