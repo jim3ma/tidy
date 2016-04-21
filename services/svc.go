@@ -2,11 +2,13 @@ package services
 
 import (
 	"log"
+	"time"
 
 	"gopkg.in/mgo.v2"
 
 	"github.com/fvbock/endless"
 	"github.com/gin-gonic/gin"
+	"github.com/itsjamie/gin-cors"
 	"github.com/jim3mar/basicmgo/mongo"
 	jsonp "github.com/jim3mar/gin-jsonp"
 	cr "github.com/jim3mar/tidy/services/checkin"
@@ -56,26 +58,44 @@ func (s *Service) Run(cfg Config) error {
 	}
 	defer mgoSession.Close()
 
-	svc_cr := &cr.CheckInResource{}
-	svc_cr.Init(mgoSession)
+	svcCR := &cr.CheckInResource{}
+	svcCR.Init(mgoSession)
 
-	svc_ur := &ur.UserResource{}
-	svc_ur.Init(mgoSession)
+	svcUR := &ur.UserResource{}
+	svcUR.Init(mgoSession)
 
 	router := gin.New()
 	router.Use(gin.Logger())
+	router.Use(cors.Middleware(cors.Config{
+		Origins:         "*",
+		Methods:         "GET, PUT, POST, DELETE",
+		RequestHeaders:  "Origin, Authorization, Content-Type",
+		ExposedHeaders:  "",
+		MaxAge:          50 * time.Second,
+		Credentials:     true,
+		ValidateHeaders: false,
+	}))
 	router.Use(jsonp.Handler())
 	router.Use(gin.Recovery())
-	router.Use(utilities.JWTHandler())
 
 	v1 := router.Group("/v1")
 	{
-		v1.POST("/checkin", svc_cr.CheckIn)
-		v1.GET("/checkin", svc_cr.ListCheckIn)
+		// checkin api
+		// need token
+		ci := v1.Group("/checkin")
+		ci.Use(utilities.JWTHandler())
+		ci.POST("", svcCR.CheckIn)
+		ci.GET("", svcCR.ListCheckIn)
 
-		v1.GET("/user/register", svc_ur.NewUser)
-		v1.GET("/user/login", svc_ur.AuthWithPassword)
-		v1.POST("/user/login", svc_ur.AuthWithPassword)
+		// user api: register and login
+		user := v1.Group("/user")
+		user.POST("/register", svcUR.NewUser)
+		user.GET("/login", svcUR.AuthWithPassword)
+		// user infomation
+		// need token
+		userInfo := user.Group("/info")
+		userInfo.Use(utilities.JWTHandler())
+		userInfo.GET("", svcUR.NewUser)
 	}
 
 	//router.Run(cfg.ServiceHost)

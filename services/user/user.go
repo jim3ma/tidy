@@ -1,24 +1,25 @@
 package user
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	mod "github.com/jim3mar/tidy/models/user"
 	util "github.com/jim3mar/tidy/utilities"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
-	"net/http"
 	//"encoding/json"
-	//"log"
+	"log"
 	//"strconv"
 	"time"
 )
 
 type UserResource struct {
-	Mongo *mgo.Session
+	Mongo    *mgo.Session
 	CollUser *mgo.Collection
 }
 
-func (ur *UserResource) Init(session *mgo.Session){
+func (ur *UserResource) Init(session *mgo.Session) {
 	ur.Mongo = session
 	ur.CollUser = ur.Mongo.DB("tidy").C("user")
 }
@@ -27,16 +28,26 @@ func (ur *UserResource) NewUser(c *gin.Context) {
 	now := time.Now()
 	//col := ur.Mongo.DB("tidy").C("user")
 	//content := c.PostForm("content")
+	username := c.PostForm("username")
+	password := c.PostForm("password")
+	email := c.PostForm("email")
+
+	if username == "" || password == "" {
+		c.JSON(http.StatusBadRequest, "Invalid parameter")
+	}
+	log.Print(username)
+	log.Print(password)
+	log.Print(email)
 	err := ur.CollUser.Insert(&mod.User{
-		Id_:          bson.NewObjectId(),
-		UserName:     "tidy",
-		Password:     util.Md5Sum("tidy"),
-		EMail:        "tidy@tidy.com",
-		CreateAt:     now,
-		Timestamp:    now.Unix(),
-        Portrait:     "avantar.png",
-        Continuous:   0,
-        //LastCheckIn:  ,
+		Id_:        bson.NewObjectId(),
+		UserName:   username,
+		Password:   util.Md5Sum(password),
+		EMail:      email,
+		CreateAt:   now,
+		Timestamp:  now.Unix(),
+		Portrait:   "avantar.png",
+		Continuous: 0,
+		//LastCheckIn:  ,
 	})
 
 	if err != nil {
@@ -48,12 +59,12 @@ func (ur *UserResource) NewUser(c *gin.Context) {
 }
 
 type AuthReponse struct {
-	AuthToken string `json:"auth_token"`
+	AuthToken string   `json:"auth_token"`
 	UserInfo  mod.User `json:"user_info"`
 }
 
 func (ur *UserResource) AuthWithPassword(c *gin.Context) {
-    username := c.DefaultQuery("username", "")
+	username := c.DefaultQuery("username", "")
 	password := c.DefaultQuery("password", "")
 	if username == "" || password == "" {
 		c.JSON(http.StatusForbidden, "invalid username or password")
@@ -71,9 +82,9 @@ func (ur *UserResource) AuthWithPassword(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK,
-		AuthReponse {
+		AuthReponse{
 			AuthToken: "570fb03a55cbf50efc93a728",
-			UserInfo: *user,
+			UserInfo:  *user,
 		})
 	return
 }

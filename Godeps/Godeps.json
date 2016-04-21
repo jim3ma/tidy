@@ -1,7 +1,16 @@
 {
 	"ImportPath": "github.com/jim3mar/tidy",
 	"GoVersion": "go1.6",
+	"GodepVersion": "v62",
+	"Packages": [
+		"./..."
+	],
 	"Deps": [
+		{
+			"ImportPath": "github.com/dgrijalva/jwt-go",
+			"Comment": "v2.6.0",
+			"Rev": "a2c85815a77d0f951e33ba4db5ae93629a1530af"
+		},
 		{
 			"ImportPath": "github.com/fvbock/endless",
 			"Rev": "dd6ed5d07b55d55cf8342731bbbb96bd20283b7d"
@@ -26,12 +35,16 @@
 			"Rev": "552c7b9542c194800fd493123b3798ef0a832032"
 		},
 		{
+			"ImportPath": "github.com/itsjamie/gin-cors",
+			"Rev": "97b4a9da79331dfa2b6d35f4cdd1e50f5148859c"
+		},
+		{
 			"ImportPath": "github.com/jim3mar/basicmgo/mongo",
 			"Rev": "85053161e1dbd622d679a3552adb500b0d1369f5"
 		},
 		{
-			"ImportPath": "github.com/jim3mar/ginjsonp",
-			"Rev": "3ef110334b10a07f11774723b1dd96e840b97050"
+			"ImportPath": "github.com/jim3mar/gin-jsonp",
+			"Rev": "0c4a9edb68c30cce16ebb5c47673b2a048ae2a3e"
 		},
 		{
 			"ImportPath": "github.com/manucorporat/sse",
@@ -65,6 +78,10 @@
 			"ImportPath": "gopkg.in/mgo.v2/internal/scram",
 			"Comment": "r2016.02.04-1-gb6e2fa3",
 			"Rev": "b6e2fa371e64216a45e61072a96d4e3859f169da"
+		},
+		{
+			"ImportPath": "gopkg.in/yaml.v2",
+			"Rev": "a83829b6f1293c91addabc89d0571c246397bbf4"
 		}
 	]
 }
