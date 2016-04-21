@@ -67,6 +67,7 @@ func JWTHandler() gin.HandlerFunc {
 
 		if tokenString == "" {
 			c.JSON(http.StatusUnauthorized, "Empty Token")
+			c.Abort()
 			return
 		}
 		verified, token := VerifyToken(tokenString)
@@ -102,6 +103,7 @@ func JWTHandler() gin.HandlerFunc {
 			return
 		}
 		c.JSON(http.StatusUnauthorized, "Error Token")
+		c.Abort()
 		return
 	}
 }

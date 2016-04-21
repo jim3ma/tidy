@@ -41,7 +41,7 @@ func (ur *UserResource) NewUser(c *gin.Context) {
 	log.Print("New password" + password)
 	log.Print("New email" + email)
 	err := ur.CollUser.Insert(&mod.User{
-		Id_:        bson.NewObjectId(),
+		ID:         bson.NewObjectId(),
 		UserName:   username,
 		Password:   util.Md5Sum(password),
 		EMail:      email,
@@ -82,7 +82,7 @@ func (ur *UserResource) AuthWithPassword(c *gin.Context) {
 		c.JSON(http.StatusForbidden, err)
 		return
 	}
-	tokenString, err := util.NewToken(map[string]string{"uid": user.Id_.Hex()})
+	tokenString, err := util.NewToken(map[string]string{"uid": user.ID.Hex()})
 	if err != nil {
 		panic(err)
 	}
@@ -92,4 +92,27 @@ func (ur *UserResource) AuthWithPassword(c *gin.Context) {
 			UserInfo:  *user,
 		})
 	return
+}
+
+func (ur *UserResource) QueryInfo(c *gin.Context) {
+	uidString := c.DefaultQuery("uid", "")
+	log.Print("Checkin user_id: " + uidString)
+	if uidString == "" {
+		c.JSON(http.StatusBadRequest, "Empty User ID")
+		return
+	}
+	uid := bson.ObjectIdHex(uidString)
+	user := new(mod.User)
+	err := ur.CollUser.Find(
+		bson.M{
+			"_id": uid,
+		}).One(user)
+	if err != nil {
+		panic(err)
+	}
+	c.JSON(http.StatusOK, struct {
+		UserInfo interface{} `json:"user_info"`
+	}{
+		UserInfo: user,
+	})
 }

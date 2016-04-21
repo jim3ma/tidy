@@ -95,7 +95,7 @@ func (s *Service) Run(cfg Config) error {
 		// need token
 		userInfo := user.Group("/info")
 		userInfo.Use(utilities.JWTHandler())
-		userInfo.GET("", svcUR.NewUser)
+		userInfo.GET("", svcUR.QueryInfo)
 	}
 
 	//router.Run(cfg.ServiceHost)

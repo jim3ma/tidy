@@ -1,20 +1,21 @@
 package ginjsonp
 
 import (
-	"bytes"
 	"bufio"
+	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"net"
 	"net/http"
 	"strconv"
 	"strings"
+
+	"github.com/gin-gonic/gin"
 )
 
 const (
-	noWritten	= -1
-	defaultStatus	= 200
+	noWritten     = -1
+	defaultStatus = 200
 )
 
 func Handler() gin.HandlerFunc {
@@ -32,11 +33,10 @@ func Handler() gin.HandlerFunc {
 			wb = NewResponseBuffer(w)
 			c.Writer = wb
 			c.Next()
-		}else {
+		} else {
 			c.Next()
 			return
 		}
-		
 
 		if strings.Index(wb.Header().Get("Content-Type"), "/json") >= 0 {
 			status := wb.status
@@ -85,8 +85,8 @@ func (j *jsonpResponse) MarshalJSON() ([]byte, error) {
 
 type responseBuffer struct {
 	Response gin.ResponseWriter // the actual ResponseWriter to flush to
-	status   int                 // the HTTP response code from WriteHeader
-	Body     *bytes.Buffer       // the response content body
+	status   int                // the HTTP response code from WriteHeader
+	Body     *bytes.Buffer      // the response content body
 	Flushed  bool
 }
 
@@ -109,7 +109,7 @@ func (w *responseBuffer) WriteString(s string) (n int, err error) {
 	//w.WriteHeaderNow()
 	//n, err = io.WriteString(w.ResponseWriter, s)
 	//w.size += n
-        n, err = w.Write([]byte(s))
+	n, err = w.Write([]byte(s))
 	return
 }
 

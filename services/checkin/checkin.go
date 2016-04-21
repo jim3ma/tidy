@@ -36,7 +36,7 @@ func (cr *CheckInResource) CheckIn(c *gin.Context) {
 	uidString := c.PostForm("uid")
 	log.Print("Checkin user_id: " + uidString)
 	uid := bson.ObjectIdHex(uidString)
-	err := cr.CollCI.Insert(&mod.CheckIn{
+	ciData := &mod.CheckIn{
 		Id_:         bson.NewObjectId(),
 		UserId:      uid,
 		Content:     content,
@@ -49,7 +49,8 @@ func (cr *CheckInResource) CheckIn(c *gin.Context) {
 		CreateSec:   now.Second(),
 		Timestamp:   now.Unix(),
 		Images:      []string{"abc.png", "xyz.png"},
-	})
+	}
+	err := cr.CollCI.Insert(ciData)
 	if err != nil {
 		panic(err)
 	}
@@ -60,6 +61,9 @@ func (cr *CheckInResource) CheckIn(c *gin.Context) {
 		bson.M{
 			"$inc": bson.M{
 				"continuous": 1,
+			},
+			"$set": bson.M{
+				"last_checkin": *ciData,
 			},
 		})
 
