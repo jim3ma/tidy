@@ -85,10 +85,12 @@ func (s *Service) Run(cfg Config) error {
 		ci := v1.Group("/checkin")
 		ci.Use(utilities.JWTHandler())
 		ci.POST("", svcCR.CheckIn)
+		//ci.POST("/uploadimg", svcCR.UploadImg)
 		ci.GET("", svcCR.ListCheckIn)
 
 		// user api: register and login
 		user := v1.Group("/user")
+		user.POST("/uploadimg", svcCR.UploadImg)
 		user.POST("/register", svcUR.NewUser)
 		user.GET("/login", svcUR.AuthWithPassword)
 		// user infomation

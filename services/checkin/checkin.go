@@ -1,7 +1,9 @@
 package checkin
 
 import (
+	"io"
 	"log"
+	"os"
 
 	"github.com/gin-gonic/gin"
 	mod "github.com/jim3mar/tidy/models/checkin"
@@ -86,4 +88,24 @@ func (cr *CheckInResource) ListCheckIn(c *gin.Context) {
 	//col.Find(nil).All(&ci)
 	//log.Printf("%s", ci)
 	c.JSON(http.StatusOK, ci)
+}
+
+func (cr *CheckInResource) UploadImg(c *gin.Context) {
+	file, header, err := c.Request.FormFile("file")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, "")
+		return
+	}
+	//log.Println(header)
+	filename := header.Filename
+	//fmt.Println(header.Filename)
+	out, err := os.Create("./tmp/" + filename + ".png")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer out.Close()
+	_, err = io.Copy(out, file)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
