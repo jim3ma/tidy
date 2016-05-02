@@ -93,11 +93,16 @@ func (s *Service) Run(cfg Config) error {
 		user.POST("/uploadimg", svcCR.UploadImg)
 		user.POST("/register", svcUR.NewUser)
 		user.GET("/login", svcUR.AuthWithPassword)
+
 		// user infomation
 		// need token
 		userInfo := user.Group("/info")
 		userInfo.Use(utilities.JWTHandler())
 		userInfo.GET("", svcUR.QueryInfo)
+
+		// static files
+		v1.Static("/static/images", "./tmp")
+		//v1.Static("/static", ".")
 	}
 
 	//router.Run(cfg.ServiceHost)

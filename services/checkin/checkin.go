@@ -4,6 +4,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	mod "github.com/jim3mar/tidy/models/checkin"
@@ -36,6 +37,7 @@ func (cr *CheckInResource) CheckIn(c *gin.Context) {
 	now := time.Now()
 	content := c.PostForm("content")
 	uidString := c.PostForm("uid")
+	img := c.PostForm("img")
 	log.Print("Checkin user_id: " + uidString)
 	uid := bson.ObjectIdHex(uidString)
 	ciData := &mod.CheckIn{
@@ -50,7 +52,7 @@ func (cr *CheckInResource) CheckIn(c *gin.Context) {
 		CreateMin:   now.Minute(),
 		CreateSec:   now.Second(),
 		Timestamp:   now.Unix(),
-		Images:      []string{"abc.png", "xyz.png"},
+		Images:      []string{img},
 	}
 	err := cr.CollCI.Insert(ciData)
 	if err != nil {
@@ -92,14 +94,23 @@ func (cr *CheckInResource) ListCheckIn(c *gin.Context) {
 
 func (cr *CheckInResource) UploadImg(c *gin.Context) {
 	file, header, err := c.Request.FormFile("file")
+	//file, _, err := c.Request.FormFile("file")
 	if err != nil {
 		c.JSON(http.StatusBadRequest, "")
 		return
 	}
 	//log.Println(header)
-	filename := header.Filename
+	//filename split
+	fns := strings.Split(header.Filename, ".")
+	log.Println(fns)
+	fileext := "png"
+	if l := len(fns); l >= 2 {
+		fileext = fns[l-1]
+	}
+	filename := bson.NewObjectId().Hex() + "." + fileext
+	log.Println(filename)
 	//fmt.Println(header.Filename)
-	out, err := os.Create("./tmp/" + filename + ".png")
+	out, err := os.Create("./tmp/" + filename)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -108,4 +119,5 @@ func (cr *CheckInResource) UploadImg(c *gin.Context) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	c.JSON(http.StatusOK, filename)
 }
