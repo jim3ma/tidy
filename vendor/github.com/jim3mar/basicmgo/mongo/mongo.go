@@ -5,11 +5,11 @@ package mongo
 import (
 	"encoding/json"
 	"fmt"
+	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 	"log"
 	"strings"
 	"time"
-	"gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
 )
 
 const (
@@ -32,7 +32,7 @@ type (
 		Database string
 		UserName string
 		Password string
-		Timeout	 time.Duration
+		Timeout  time.Duration
 	}
 
 	// mongoManager contains dial and session information.

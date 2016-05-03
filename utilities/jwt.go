@@ -58,10 +58,10 @@ func UpdatePubKey(path string) {
 
 func UpdatePriKey(path string) {
 	signBytes, err := ioutil.ReadFile(path)
-        fatal(err)
+	fatal(err)
 
-        signKey, err = jwt.ParseRSAPrivateKeyFromPEM(signBytes)
-        fatal(err)
+	signKey, err = jwt.ParseRSAPrivateKeyFromPEM(signBytes)
+	fatal(err)
 }
 
 // JWTHandler is a Gin MinddleWare for JWT in tidy project

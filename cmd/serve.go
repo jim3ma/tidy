@@ -73,10 +73,10 @@ func getConfig() (services.Config, error) {
 
 func updateConfig(config *services.Config) {
 	config.ServiceHost = fmt.Sprintf("%s:%s", viper.GetString("host"), viper.GetString("port"))
-        config.MongoDBHosts = fmt.Sprintf("%s:%s", viper.GetString("mongo.host"), viper.GetString("mongo.port"))
-        config.MongoAuthUser = viper.GetString("mongo.username")
-        config.MongoAuthPass = viper.GetString("mongo.password")
-        config.MongoAuthDB = viper.GetString("mongo.db")
+	config.MongoDBHosts = fmt.Sprintf("%s:%s", viper.GetString("mongo.host"), viper.GetString("mongo.port"))
+	config.MongoAuthUser = viper.GetString("mongo.username")
+	config.MongoAuthPass = viper.GetString("mongo.password")
+	config.MongoAuthDB = viper.GetString("mongo.db")
 }
 
 func updateKeys() {
