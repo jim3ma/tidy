@@ -48,6 +48,22 @@ func fatal(err error) {
 	}
 }
 
+func UpdatePubKey(path string) {
+	verifyBytes, err := ioutil.ReadFile(path)
+	fatal(err)
+
+	verifyKey, err = jwt.ParseRSAPublicKeyFromPEM(verifyBytes)
+	fatal(err)
+}
+
+func UpdatePriKey(path string) {
+	signBytes, err := ioutil.ReadFile(path)
+        fatal(err)
+
+        signKey, err = jwt.ParseRSAPrivateKeyFromPEM(signBytes)
+        fatal(err)
+}
+
 // JWTHandler is a Gin MinddleWare for JWT in tidy project
 func JWTHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {

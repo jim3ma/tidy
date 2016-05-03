@@ -24,6 +24,7 @@ import (
 
 	"github.com/jim3mar/basicmgo/mongo"
 	"github.com/jim3mar/tidy/services"
+	"github.com/jim3mar/tidy/utilities"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -40,7 +41,7 @@ This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		// TODO: Work your own magic here
-		fmt.Println("serve called")
+		fmt.Println("Tidy Serve Running...")
 		Main()
 	},
 }
@@ -78,9 +79,19 @@ func updateConfig(config *services.Config) {
         config.MongoAuthDB = viper.GetString("mongo.db")
 }
 
+func updateKeys() {
+	if viper.GetString("jwt.pubkey") != "" {
+		utilities.UpdatePubKey(viper.GetString("jwt.pubkey"))
+	}
+	if viper.GetString("jwt.prikey") != "" {
+		utilities.UpdatePriKey(viper.GetString("jwt.prikey"))
+	}
+}
+
 func Main() {
 	cfg, _ := getConfig()
 	updateConfig(&cfg)
+	updateKeys()
 
 	mgocfg := &mongo.MongoConfiguration{
 		Hosts:    cfg.MongoDBHosts,
