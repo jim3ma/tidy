@@ -1,48 +1,21 @@
+// Copyright © 2016 NAME HERE <EMAIL ADDRESS>
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package main
 
-import (
-	"github.com/jim3mar/basicmgo/mongo"
-	"github.com/jim3mar/tidy/services"
-	"log"
-	"os"
-	"os/signal"
-	"syscall"
-	"time"
-)
-
-func getConfig() (services.Config, error) {
-	config := services.Config{}
-	config.ServiceHost = "0.0.0.0:8089"
-	config.MongoDBHosts = "127.0.0.1:27017"
-	config.MongoAuthUser = "tidy"
-	config.MongoAuthPass = "111111"
-	config.MongoAuthDB = "tidy"
-	return config, nil
-}
+import "github.com/jim3mar/tidy/cmd"
 
 func main() {
-	cfg, _ := getConfig()
-
-	mgocfg := &mongo.MongoConfiguration{
-		Hosts:    cfg.MongoDBHosts,
-		Database: cfg.MongoAuthDB,
-		UserName: cfg.MongoAuthUser,
-		Password: cfg.MongoAuthPass,
-		Timeout:  60 * time.Second,
-	}
-
-	if err := mongo.Startup(mgocfg); err != nil {
-		log.Fatalf("MongoSession startup failed: %s\n", err)
-		return
-	}
-
-	svc := services.Service{}
-	go func() {
-		svc.Run(cfg)
-	}()
-
-	ch := make(chan os.Signal)
-	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
-	log.Printf("\nCatched Signal: %v\r\n", <-ch)
-	log.Printf("Graceful Shutdown.")
+	cmd.Execute()
 }
