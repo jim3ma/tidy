@@ -1,9 +1,6 @@
 {
 	"ImportPath": "github.com/jim3mar/tidy",
 	"GoVersion": "go1.6",
-	"Packages": [
-		"./..."
-	],
 	"Deps": [
 		{
 			"ImportPath": "github.com/BurntSushi/toml",
@@ -19,10 +16,6 @@
 			"ImportPath": "github.com/fsnotify/fsnotify",
 			"Comment": "v1.3.0",
 			"Rev": "30411dbcefb7a1da7e84f75530ad3abe4011b4f8"
-		},
-		{
-			"ImportPath": "github.com/fvbock/endless",
-			"Rev": "dd6ed5d07b55d55cf8342731bbbb96bd20283b7d"
 		},
 		{
 			"ImportPath": "github.com/gin-gonic/gin",
@@ -90,6 +83,10 @@
 		{
 			"ImportPath": "github.com/jim3mar/basicmgo/mongo",
 			"Rev": "85053161e1dbd622d679a3552adb500b0d1369f5"
+		},
+		{
+			"ImportPath": "github.com/jim3mar/endless",
+			"Rev": "870b802d484dc579723e361e2818b6a1d9dd9ff1"
 		},
 		{
 			"ImportPath": "github.com/jim3mar/gin-jsonp",

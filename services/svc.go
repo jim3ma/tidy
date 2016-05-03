@@ -6,10 +6,10 @@ import (
 
 	"gopkg.in/mgo.v2"
 
-	//"github.com/fvbock/endless"
 	"github.com/gin-gonic/gin"
 	"github.com/itsjamie/gin-cors"
 	"github.com/jim3mar/basicmgo/mongo"
+	"github.com/jim3mar/endless"
 	jsonp "github.com/jim3mar/gin-jsonp"
 	cr "github.com/jim3mar/tidy/services/checkin"
 	ur "github.com/jim3mar/tidy/services/user"
@@ -105,8 +105,8 @@ func (s *Service) Run(cfg Config) error {
 		//v1.Static("/static", ".")
 	}
 
-	router.Run(cfg.ServiceHost)
-	//endless.ListenAndServe(cfg.ServiceHost, router)
+	//router.Run(cfg.ServiceHost)
+	endless.ListenAndServe(cfg.ServiceHost, router)
 
 	return nil
 }
