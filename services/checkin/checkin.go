@@ -107,7 +107,8 @@ func (cr *CheckInResource) UploadImg(c *gin.Context) {
 	if l := len(fns); l >= 2 {
 		fileext = fns[l-1]
 	}
-	filename := bson.NewObjectId().Hex() + "." + fileext
+	guid := bson.NewObjectId().Hex()
+	filename := guid + "." + fileext
 	log.Println(filename)
 	//fmt.Println(header.Filename)
 	out, err := os.Create("./tmp/" + filename)
@@ -119,5 +120,11 @@ func (cr *CheckInResource) UploadImg(c *gin.Context) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	c.JSON(http.StatusOK, filename)
+	c.JSON(http.StatusOK, struct{
+		GUID string `json:"guid"`
+		Ext string `json:"ext"`
+	}{
+		GUID: guid,
+		Ext: fileext,
+	})
 }

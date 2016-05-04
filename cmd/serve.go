@@ -40,7 +40,6 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		// TODO: Work your own magic here
 		fmt.Println("Tidy Serve Running...")
 		Main()
 	},
@@ -72,8 +71,10 @@ func getConfig() (services.Config, error) {
 }
 
 func updateConfig(config *services.Config) {
-	config.ServiceHost = fmt.Sprintf("%s:%s", viper.GetString("host"), viper.GetString("port"))
-	config.MongoDBHosts = fmt.Sprintf("%s:%s", viper.GetString("mongo.host"), viper.GetString("mongo.port"))
+	config.ServiceHost = fmt.Sprintf("%s:%s",
+		viper.GetString("host"), viper.GetString("port"))
+	config.MongoDBHosts = fmt.Sprintf("%s:%s",
+		viper.GetString("mongo.host"), viper.GetString("mongo.port"))
 	config.MongoAuthUser = viper.GetString("mongo.username")
 	config.MongoAuthPass = viper.GetString("mongo.password")
 	config.MongoAuthDB = viper.GetString("mongo.db")
