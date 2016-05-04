@@ -52,7 +52,7 @@ func (cr *CheckInResource) CheckIn(c *gin.Context) {
 		CreateMin:   now.Minute(),
 		CreateSec:   now.Second(),
 		Timestamp:   now.Unix(),
-		Images:      []string{img},
+		Images:      strings.Split(img, "|"),
 	}
 	err := cr.CollCI.Insert(ciData)
 	if err != nil {
@@ -120,11 +120,11 @@ func (cr *CheckInResource) UploadImg(c *gin.Context) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	c.JSON(http.StatusOK, struct{
+	c.JSON(http.StatusOK, struct {
 		GUID string `json:"guid"`
-		Ext string `json:"ext"`
+		Ext  string `json:"ext"`
 	}{
 		GUID: guid,
-		Ext: fileext,
+		Ext:  fileext,
 	})
 }
