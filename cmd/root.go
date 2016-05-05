@@ -67,6 +67,9 @@ func initConfig() {
 		viper.SetConfigFile(cfgFile)
 	}
 
+	SetDefault()
+	BindEnv()
+
 	viper.SetConfigName(".tidy") // name of config file (without extension)
 	viper.AddConfigPath("$HOME") // adding home directory as first search path
 	viper.AddConfigPath(".")     // adding current directory as first search path
@@ -76,4 +79,26 @@ func initConfig() {
 	if err := viper.ReadInConfig(); err == nil {
 		fmt.Println("Using config file:", viper.ConfigFileUsed())
 	}
+}
+
+func SetDefault() {
+	viper.SetDefault("host", "0.0.0.0")
+	viper.SetDefault("port", "8089")
+	viper.SetDefault("mongo.host", "127.0.0.1")
+	viper.SetDefault("mongo.port", "27017")
+	viper.SetDefault("mongo.username", "tidy")
+	viper.SetDefault("mongo.password", "111111")
+	viper.SetDefault("mongo.db", "tidy")
+}
+
+func BindEnv() {
+	viper.BindEnv("host", "TIDY_HOST")
+	viper.BindEnv("port", "TIDY_PORT")
+	viper.BindEnv("mongo.host", "MONGODB_HOST")
+	viper.BindEnv("mongo.port", "MONGODB_PORT")
+	viper.BindEnv("mongo.username", "MONGODB_USERNAME")
+	viper.BindEnv("mongo.password", "MONGODB_PASSWORD")
+	viper.BindEnv("mongo.db", "MONGODB_DATABASE")
+	viper.BindEnv("jwt.pubkey", "JWT_PUBKEY_PATH")
+	viper.BindEnv("jwt.prikey", "JWT_PRIKEY_PATH")
 }

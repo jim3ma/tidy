@@ -47,7 +47,7 @@ to quickly create a Cobra application.`,
 
 func init() {
 	RootCmd.AddCommand(serveCmd)
-	viper.SetEnvPrefix("TIDY")
+	// viper.SetEnvPrefix("TIDY")
 
 	// Here you will define your flags and configuration settings.
 
@@ -92,7 +92,8 @@ func updateKeys() {
 }
 
 func Main() {
-	cfg, _ := getConfig()
+	//cfg, _ := getConfig()
+	cfg := services.Config{}
 	updateConfig(&cfg)
 	updateKeys()
 
