@@ -1,9 +1,9 @@
 package user
 
 import (
-	//"github.com/jim3mar/tidy/models/checkin
 	"time"
 
+	ci "github.com/jim3mar/tidy/models/checkin"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -17,4 +17,18 @@ type User struct {
 	Portrait    string        `bson:"portrait" json:"portrait"`
 	Continuous  int           `bson:"continuous" json:"continuous"`
 	LastCheckIn interface{}   `bson:"last_checkin" json:"last_checkin"`
+}
+
+func(u *User) CanCheckIn() bool {
+	if u.LastCheckIn == nil {
+		return false
+	}
+	checkin := u.LastCheckIn.(ci.CheckIn)
+	now := time.Now()
+	if checkin.CreateYear == now.Year() &&
+			checkin.CreateMonth == int(now.Month()) &&
+			checkin.CreateDay == now.Day() {
+		return true
+	}
+	return false
 }
