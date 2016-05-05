@@ -14,12 +14,12 @@ RUN apk add --no-cache --virtual .build-deps git && \
         cd ${BUILD_DIR} && \
         git clone -b dev https://github.com/jim3mar/tidy.git && \
         cd tidy && \
-        sed -i "s/MONGODB_HOST/MONGODB_PORT_27017_TCP_ADDR/g" cmd/root.go && \
-        sed -i "s/MONGODB_PORT/MONGODB_PORT_27017_TCP_PORT/g" cmd/root.go && \
+        sed -i "s/\"MONGODB_HOST\"/\"MONGODB_PORT_27017_TCP_ADDR\"/g" cmd/root.go && \
+        sed -i "s/\"MONGODB_PORT\"/\"MONGODB_PORT_27017_TCP_PORT\"/g" cmd/root.go && \
         CGO_ENABLED=0 GOPATH=/go go build tidy.go && \
         cp tidy ${TIDY_DIR}/ && \
         (cd ${TIDY_DIR}/keys/; sh ${TIDY_DIR}/keys/key-gen.sh) && \
-        apk del .build-deps git && rm -rf ${BUILD_DIR}
+        apk del .build-deps git #&& rm -rf ${BUILD_DIR}
 
 WORKDIR /usr/share/tidy/
 
