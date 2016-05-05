@@ -1,0 +1,27 @@
+FROM golang:1.6-alpine
+
+MAINTAINER Jim Mar <majinjing3@gmail.com>
+ENV CREATE_DATE 2016-05-03
+
+ENV TIDY_DIR /usr/share/tidy/
+ENV BUILD_DIR /go/src/github.com/jim3mar
+
+ADD keys ${TIDY_DIR}/keys/
+ADD tidy.yaml ${TIDY_DIR}
+
+RUN apk add --no-cache --virtual .build-deps git && \
+        mkdir -p ${BUILD_DIR} && \
+        cd ${BUILD_DIR} && \
+        git clone -b dev https://github.com/jim3mar/tidy.git && \
+        cd tidy && \
+        CGO_ENABLED=0 GOPATH=/go go build tidy.go && \
+        cp tidy ${TIDY_DIR} && \
+        sh ${TIDY_DIR}/keys/key-gen.sh && \
+        apk del .build-deps
+
+WORKDIR /usr/share/tidy/
+
+EXPOSE 80
+
+CMD ["/usr/share/tidy/tidy", "-c", "tidy.yaml", "serve"]
+
