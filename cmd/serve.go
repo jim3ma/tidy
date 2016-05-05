@@ -80,6 +80,7 @@ func updateConfig(config *services.Config) {
 	config.MongoAuthUser = viper.GetString("mongo.username")
 	config.MongoAuthPass = viper.GetString("mongo.password")
 	config.MongoAuthDB = viper.GetString("mongo.db")
+	fmt.Printf("current config: %s\n", config)
 }
 
 func updateKeys() {
