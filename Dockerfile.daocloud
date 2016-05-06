@@ -19,7 +19,7 @@ RUN apk add --no-cache --virtual .build-deps git && \
         sed -i "s/\"MONGODB_DATABASE\"/\"MONGODB_INSTANCE_NAME\"/g" cmd/root.go && \
         sed -i "s/\"8089\"/\"80\"/g" cmd/root.go && \
         CGO_ENABLED=0 GOPATH=/go go build tidy.go && \
-        cp tidy ${TIDY_DIR}/ && \
+        cp tidy ${TIDY_DIR}/ && mkdir -p ${TIDY_DIR}/tmp && \
         (cd ${TIDY_DIR}/keys/; sh ${TIDY_DIR}/keys/key-gen.sh) && \
         apk del .build-deps git && rm -rf ${BUILD_DIR}
 
