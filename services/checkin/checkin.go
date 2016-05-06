@@ -16,6 +16,7 @@ import (
 	//"encoding/json"
 	//"log"
 	//"strconv"
+	"github.com/spf13/viper"
 	"time"
 )
 
@@ -26,9 +27,10 @@ type CheckInResource struct {
 }
 
 func (cr *CheckInResource) Init(session *mgo.Session) {
+	db := viper.GetString("mongo.db")
 	cr.Mongo = session
-	cr.CollCI = cr.Mongo.DB("tidy").C("checkin")
-	cr.CollUser = cr.Mongo.DB("tidy").C("user")
+	cr.CollCI = cr.Mongo.DB(db).C("checkin")
+	cr.CollUser = cr.Mongo.DB(db).C("user")
 }
 
 // CheckIn do checkin task for special user id
@@ -81,12 +83,13 @@ func (cr *CheckInResource) CheckIn(c *gin.Context) {
 // ListCheckIn return all checkin records
 // Method: GET
 func (cr *CheckInResource) ListCheckIn(c *gin.Context) {
-	col := cr.Mongo.DB("tidy").C("checkin")
+	//col := cr.Mongo.DB("tidy").C("checkin")
 	uid := bson.ObjectIdHex(c.DefaultQuery("uid", ""))
 	//objectId := bson.ObjectIdHex(id)
 	//log.Print("user_id: " + uid)
 	var ci []mod.CheckIn
-	col.Find(bson.M{"user_id": uid}).All(&ci)
+	//col.Find(bson.M{"user_id": uid}).All(&ci)
+	cr.CollCI.Find(bson.M{"user_id": uid}).All(&ci)
 	//col.Find(nil).All(&ci)
 	//log.Printf("%s", ci)
 	c.JSON(http.StatusOK, ci)

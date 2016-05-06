@@ -11,6 +11,7 @@ import (
 	//"encoding/json"
 	"log"
 	//"strconv"
+	"github.com/spf13/viper"
 	"time"
 )
 
@@ -20,8 +21,9 @@ type UserResource struct {
 }
 
 func (ur *UserResource) Init(session *mgo.Session) {
+	db := viper.GetString("mongo.db")
 	ur.Mongo = session
-	ur.CollUser = ur.Mongo.DB("tidy").C("user")
+	ur.CollUser = ur.Mongo.DB(db).C("user")
 }
 
 // NewUser add a user into mongo/tidy/user
