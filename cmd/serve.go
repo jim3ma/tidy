@@ -76,7 +76,6 @@ func updateConfig(config *services.Config) {
 		viper.GetString("host"), viper.GetString("port"))
 	config.MongoDBHosts = fmt.Sprintf("%s:%s",
 		viper.GetString("mongo.host"), viper.GetString("mongo.port"))
-	fmt.Println(config.MongoDBHosts)
 	config.MongoAuthUser = viper.GetString("mongo.username")
 	config.MongoAuthPass = viper.GetString("mongo.password")
 	config.MongoAuthDB = viper.GetString("mongo.db")
