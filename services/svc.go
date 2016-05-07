@@ -93,6 +93,7 @@ func (s *Service) Run(cfg Config) error {
 		user := v1.Group("/user")
 		user.POST("/uploadimg", svcCR.UploadImg)
 		user.POST("/register", svcUR.NewUser)
+		user.GET("/query", svcUR.RegisterQuery)
 		user.GET("/login", svcUR.AuthWithPassword)
 
 		// user infomation

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -41,6 +42,12 @@ func (ur *UserResource) NewUser(c *gin.Context) {
 	log.Print("New username:" + username)
 	log.Print("New password:" + password)
 	log.Print("New email:" + email)
+
+	if ur.IsAccountExist(username, email) {
+		c.JSON(http.StatusBadRequest, "username or email account existed!")
+		return
+	}
+
 	user := &mod.User{
 		ID:         bson.NewObjectId(),
 		UserName:   username,
@@ -60,27 +67,77 @@ func (ur *UserResource) NewUser(c *gin.Context) {
 	ur.newTokenAndRet(c, user)
 }
 
+func (ur *UserResource) IsAccountExist(username string, email string) bool {
+	user1, err1 := ur.QueryUserInfoByName(username)
+	if err1 != nil || len(user1) != 0 {
+		return true
+	}
+
+	user2, err2 := ur.QueryUserInfoByEmail(email)
+	if err2 != nil || len(user2) != 0 {
+		return true
+	}
+	return false
+}
+
 type AuthReponse struct {
 	AuthToken string   `json:"auth_token"`
 	UserInfo  mod.User `json:"user_info"`
 }
 
+func (ur *UserResource) RegisterQuery(c *gin.Context) {
+	querytype := c.DefaultQuery("type", "username")
+	switch querytype {
+	case "username":
+		username := c.DefaultQuery("username", "")
+		if username != "" {
+			user, err := ur.QueryUserInfoByName(username)
+			if err != nil || len(user) != 0 {
+				c.JSON(http.StatusConflict, "")
+				return
+			}
+		}
+	case "email":
+		email := c.DefaultQuery("email", "")
+		if email != "" {
+			user, err := ur.QueryUserInfoByEmail(email)
+			if err != nil || len(user) != 0 {
+				c.JSON(http.StatusConflict, "")
+				return
+			}
+		}
+	default:
+		c.JSON(http.StatusConflict, "")
+		return
+	}
+	c.JSON(http.StatusOK, "")
+}
+
 func (ur *UserResource) AuthWithPassword(c *gin.Context) {
-	username := c.DefaultQuery("username", "")
+	account := c.DefaultQuery("account", "")
 	password := c.DefaultQuery("password", "")
-	if username == "" || password == "" {
-		c.JSON(http.StatusBadRequest, "Invalid username or password")
+	if account == "" || password == "" {
+		c.JSON(http.StatusBadRequest, "Invalid username, email or password")
 		return
 	}
 	password = util.Md5Sum(password)
 	user := new(mod.User)
-	err := ur.CollUser.Find(
-		bson.M{
-			"user_name": username,
-			"password":  password,
-		}).One(user)
+	var err error
+	if strings.Index(account, "@") != -1 {
+		err = ur.CollUser.Find(
+			bson.M{
+				"email":    account,
+				"password": password,
+			}).One(user)
+	} else {
+		err = ur.CollUser.Find(
+			bson.M{
+				"user_name": account,
+				"password":  password,
+			}).One(user)
+	}
 	if err != nil {
-		c.JSON(http.StatusForbidden, err)
+		c.JSON(http.StatusUnauthorized, err)
 		return
 	}
 	ur.newTokenAndRet(c, user)
@@ -130,4 +187,35 @@ func (ur *UserResource) QueryUserInfoByID(uidString string) (*mod.User, error) {
 			"_id": uid,
 		}).One(user)
 	return user, err
+}
+
+func (ur *UserResource) QueryUserInfoByEmail(email string) ([]mod.User, error) {
+	if email == "" {
+		return nil, errors.New("Empty email")
+	}
+
+	var user []mod.User
+	err := ur.CollUser.Find(
+		bson.M{
+			"email": email,
+		}).All(&user)
+	return user, err
+}
+
+func (ur *UserResource) QueryUserInfoByName(username string) ([]mod.User, error) {
+	if username == "" {
+		return nil, errors.New("Empty username")
+	}
+
+	var user []mod.User
+	err := ur.CollUser.Find(
+		bson.M{
+			"user_name": username,
+		}).All(&user)
+	return user, err
+}
+
+func (ur *UserResource) queryUserHelp(query bson.M, pdata interface{}) error {
+	err := ur.CollUser.Find(query).One(pdata)
+	return err
 }
