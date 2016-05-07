@@ -1,19 +1,17 @@
 package user
 
 import (
+	"errors"
+	"log"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	mod "github.com/jim3mar/tidy/models/user"
 	util "github.com/jim3mar/tidy/utilities"
+	"github.com/spf13/viper"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
-	//"encoding/json"
-	"log"
-	//"strconv"
-	"time"
-
-	"github.com/spf13/viper"
 )
 
 type UserResource struct {
@@ -78,8 +76,8 @@ func (ur *UserResource) AuthWithPassword(c *gin.Context) {
 	user := new(mod.User)
 	err := ur.CollUser.Find(
 		bson.M{
-			"username": username,
-			"password": password,
+			"user_name": username,
+			"password":  password,
 		}).One(user)
 	if err != nil {
 		c.JSON(http.StatusForbidden, err)
@@ -104,18 +102,13 @@ func (ur *UserResource) newTokenAndRet(c *gin.Context, user *mod.User) {
 		})
 }
 
-func (ur *UserResource) QueryInfo(c *gin.Context) {
+func (ur *UserResource) QueryUserInfo(c *gin.Context) {
 	uidString := c.DefaultQuery("uid", "")
 	if uidString == "" {
 		c.JSON(http.StatusBadRequest, "Empty User ID")
 		return
 	}
-	uid := bson.ObjectIdHex(uidString)
-	user := new(mod.User)
-	err := ur.CollUser.Find(
-		bson.M{
-			"_id": uid,
-		}).One(user)
+	user, err := ur.QueryUserInfoByID(uidString)
 	if err != nil {
 		panic(err)
 	}
@@ -124,4 +117,17 @@ func (ur *UserResource) QueryInfo(c *gin.Context) {
 	}{
 		UserInfo: user,
 	})
+}
+
+func (ur *UserResource) QueryUserInfoByID(uidString string) (*mod.User, error) {
+	if uidString == "" {
+		return nil, errors.New("Empty User ID")
+	}
+	uid := bson.ObjectIdHex(uidString)
+	user := new(mod.User)
+	err := ur.CollUser.Find(
+		bson.M{
+			"_id": uid,
+		}).One(user)
+	return user, err
 }

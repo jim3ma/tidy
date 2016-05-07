@@ -58,11 +58,12 @@ func (s *Service) Run(cfg Config) error {
 	}
 	defer mgoSession.Close()
 
-	svcCR := &cr.CheckInResource{}
-	svcCR.Init(mgoSession)
-
 	svcUR := &ur.UserResource{}
 	svcUR.Init(mgoSession)
+
+	svcCR := &cr.CheckInResource{}
+	svcCR.Init(mgoSession)
+	svcCR.UserResource = svcUR
 
 	router := gin.New()
 	router.Use(gin.Logger())
@@ -98,7 +99,7 @@ func (s *Service) Run(cfg Config) error {
 		// need token
 		userInfo := user.Group("/info")
 		userInfo.Use(utilities.JWTHandler())
-		userInfo.GET("", svcUR.QueryInfo)
+		userInfo.GET("", svcUR.QueryUserInfo)
 
 		// static files
 		v1.Static("/static/images", "./tmp")

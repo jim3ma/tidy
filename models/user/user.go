@@ -21,14 +21,21 @@ type User struct {
 
 func (u *User) CanCheckIn() bool {
 	if u.LastCheckIn == nil {
-		return false
-	}
-	checkin := u.LastCheckIn.(ci.CheckIn)
-	now := time.Now()
-	if checkin.CreateYear == now.Year() &&
-		checkin.CreateMonth == int(now.Month()) &&
-		checkin.CreateDay == now.Day() {
 		return true
 	}
-	return false
+	//log.Printf("Last checkin status: %s, current time: %s", u.LastCheckIn, time.Now())
+	ciData := new(ci.CheckIn)
+	if checkin, ok := u.LastCheckIn.(bson.M); ok {
+		if cb, err := bson.Marshal(checkin); err == nil {
+			if err = bson.Unmarshal(cb, ciData); err == nil {
+				now := time.Now()
+				if ciData.CreateYear == now.Year() &&
+					ciData.CreateMonth == int(now.Month()) &&
+					ciData.CreateDay == now.Day() {
+					return false
+				}
+			}
+		}
+	}
+	return true
 }

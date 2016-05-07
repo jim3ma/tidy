@@ -2,6 +2,7 @@ package utilities
 
 import (
 	"crypto/rsa"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -88,42 +89,72 @@ func JWTHandler() gin.HandlerFunc {
 		}
 		verified, token := VerifyToken(tokenString)
 		if verified {
-			switch c.Request.Method {
-			case "GET":
-				//log.Print(c.Request.Form)
-				//log.Print(c.Request)
-				//if c.Request.Form == nil {
-				//	log.Print("nil form data")
-				//	c.Request.Form = url.Values{}
-				//}
-				//c.Request.Form.Set("uid", token.Claims["uid"].(string))
-				// hard code
-				// TBD
-				c.Request.URL.RawQuery +=
-					"&" + "uid" + "=" + url.QueryEscape(token.Claims["uid"].(string)) +
-						"&" + "user_name" + "=" + url.QueryEscape(token.Claims["user_name"].(string))
-				//uid := c.DefaultQuery("uid", "none")
-				//log.Print(uid)
-			case "POST":
-				//log.Print(c.Request.PostForm)
-				//log.Print(c.Request)
-				if c.Request.PostForm == nil {
-					log.Print("nil postform data")
-					c.Request.PostForm = url.Values{}
-				}
-				c.Request.PostForm.Set("uid", token.Claims["uid"].(string))
-				c.Request.PostForm.Set("user_name", token.Claims["user_name"].(string))
-				//uid := c.DefaultPostForm("uid", "none")
-				//log.Print(uid)
-			default:
-				c.Request.Form.Set("uid", token.Claims["uid"].(string))
-			}
+			appendParameter(c, token)
 			c.Next()
 			return
 		}
 		c.JSON(http.StatusUnauthorized, "Error Token")
 		c.Abort()
 		return
+	}
+}
+func appendGetParameter(c *gin.Context, token *jwt.Token) {
+	for key, val := range token.Claims {
+		if str, ok := val.(string); ok {
+			c.Request.URL.RawQuery += "&" + key + "=" + url.QueryEscape(str)
+			continue
+		}
+		if stringer, ok := val.(fmt.Stringer); ok {
+			c.Request.URL.RawQuery += "&" + key + "=" + url.QueryEscape(stringer.String())
+			continue
+		}
+	}
+	log.Printf("Auth parameter: %s", c.Request.URL.RawQuery)
+}
+func appendParameter(c *gin.Context, token *jwt.Token) {
+	switch c.Request.Method {
+	case "GET":
+		//log.Print(c.Request.Form)
+		//log.Print(c.Request)
+
+		//if c.Request.Form == nil {
+		//	log.Print("nil form data")
+		//	c.Request.Form = url.Values{}
+		//}
+
+		//c.Request.Form.Set("uid", token.Claims["uid"].(string))
+		// hard code
+		// TBD
+
+		//c.Request.URL.RawQuery +=
+		//	"&" + "uid" + "=" + url.QueryEscape(token.Claims["uid"].(string)) +
+		//		"&" + "user_name" + "=" + url.QueryEscape(token.Claims["user_name"].(string))
+		appendGetParameter(c, token)
+		//uid := c.DefaultQuery("uid", "none")
+		//log.Print(uid)
+	case "POST":
+		//log.Print(c.Request.PostForm)
+		//log.Print(c.Request)
+		if c.Request.PostForm == nil {
+			log.Print("nil postform data")
+			c.Request.PostForm = url.Values{}
+		}
+		//c.Request.PostForm.Set("uid", token.Claims["uid"].(string))
+		//c.Request.PostForm.Set("user_name", token.Claims["user_name"].(string))
+		for key, val := range token.Claims {
+			if str, ok := val.(string); ok {
+				c.Request.PostForm.Set(key, str)
+				continue
+			}
+			if stringer, ok := val.(fmt.Stringer); ok {
+				c.Request.PostForm.Set(key, stringer.String())
+				continue
+			}
+		}
+		//uid := c.DefaultPostForm("uid", "none")
+		//log.Print(uid)
+	default:
+		appendGetParameter(c, token)
 	}
 }
 

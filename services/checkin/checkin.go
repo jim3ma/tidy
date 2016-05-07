@@ -3,29 +3,26 @@ package checkin
 import (
 	"io"
 	"log"
+	"net/http"
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	mod "github.com/jim3mar/tidy/models/checkin"
-	//"github.com/jim3mar/tidy/models/user"
-	"net/http"
-
+	//muser "github.com/jim3mar/tidy/models/user"
+	svcuser "github.com/jim3mar/tidy/services/user"
+	"github.com/spf13/viper"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
-	//"encoding/json"
-	//"log"
-	//"strconv"
-	"time"
-
-	"github.com/spf13/viper"
 )
 
 type CheckInResource struct {
-	Mongo    *mgo.Session
-	CollCI   *mgo.Collection
-	CollUser *mgo.Collection
+	Mongo        *mgo.Session
+	CollCI       *mgo.Collection
+	CollUser     *mgo.Collection
+	UserResource *svcuser.UserResource
 }
 
 func (cr *CheckInResource) Init(session *mgo.Session) {
@@ -42,10 +39,20 @@ func (cr *CheckInResource) CheckIn(c *gin.Context) {
 	content := c.PostForm("content")
 	uidString := c.PostForm("uid")
 	username := c.PostForm("user_name")
-	log.Printf("username: %s", username)
+	//log.Printf("Username: %s", username)
 	img := c.PostForm("img")
 	log.Print("Checkin user_id: " + uidString)
 	uid := bson.ObjectIdHex(uidString)
+	userinfo, err := cr.UserResource.QueryUserInfoByID(uidString)
+	log.Printf("User info: %s", userin)
+	if err != nil {
+		panic(err)
+	}
+	if !userinfo.CanCheckIn() {
+		log.Printf("user_id: %s, already checkin", uidString)
+		c.JSON(http.StatusForbidden, "Already checkin today")
+		return
+	}
 	ciData := &mod.CheckIn{
 		Id_:         bson.NewObjectId(),
 		UserId:      uid,
@@ -61,8 +68,8 @@ func (cr *CheckInResource) CheckIn(c *gin.Context) {
 		Timestamp:   now.Unix(),
 		Images:      strings.Split(img, "|"),
 	}
-	log.Printf("Checkin content: %s", *ciData)
-	err := cr.CollCI.Insert(ciData)
+	//log.Printf("Checkin content: %s", *ciData)
+	err = cr.CollCI.Insert(ciData)
 	if err != nil {
 		panic(err)
 	}
