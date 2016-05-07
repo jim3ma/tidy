@@ -99,7 +99,9 @@ func JWTHandler() gin.HandlerFunc {
 				//c.Request.Form.Set("uid", token.Claims["uid"].(string))
 				// hard code
 				// TBD
-				c.Request.URL.RawQuery += "&" + "uid" + "=" + url.QueryEscape(token.Claims["uid"].(string))
+				c.Request.URL.RawQuery +=
+					"&" + "uid" + "=" + url.QueryEscape(token.Claims["uid"].(string)) +
+						"&" + "user_name" + "=" + url.QueryEscape(token.Claims["user_name"].(string))
 				//uid := c.DefaultQuery("uid", "none")
 				//log.Print(uid)
 			case "POST":
@@ -110,6 +112,7 @@ func JWTHandler() gin.HandlerFunc {
 					c.Request.PostForm = url.Values{}
 				}
 				c.Request.PostForm.Set("uid", token.Claims["uid"].(string))
+				c.Request.PostForm.Set("user_name", token.Claims["user_name"].(string))
 				//uid := c.DefaultPostForm("uid", "none")
 				//log.Print(uid)
 			default:
@@ -128,7 +131,7 @@ func JWTHandler() gin.HandlerFunc {
 func NewToken(values map[string]string) (tokenString string, err error) {
 	// create a signer for rsa 256
 	token := jwt.New(jwt.GetSigningMethod("RS256"))
-
+	log.Printf("NewToken values: %s", values)
 	for key, val := range values {
 		// set our claims
 		token.Claims[key] = val

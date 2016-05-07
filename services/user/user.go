@@ -11,8 +11,9 @@ import (
 	//"encoding/json"
 	"log"
 	//"strconv"
-	"github.com/spf13/viper"
 	"time"
+
+	"github.com/spf13/viper"
 )
 
 type UserResource struct {
@@ -88,7 +89,11 @@ func (ur *UserResource) AuthWithPassword(c *gin.Context) {
 }
 
 func (ur *UserResource) newTokenAndRet(c *gin.Context, user *mod.User) {
-	tokenString, err := util.NewToken(map[string]string{"uid": user.ID.Hex()})
+	tokenString, err := util.NewToken(
+		map[string]string{
+			"uid":       user.ID.Hex(),
+			"user_name": user.UserName,
+		})
 	if err != nil {
 		panic(err)
 	}

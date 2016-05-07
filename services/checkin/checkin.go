@@ -4,6 +4,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -16,8 +17,9 @@ import (
 	//"encoding/json"
 	//"log"
 	//"strconv"
-	"github.com/spf13/viper"
 	"time"
+
+	"github.com/spf13/viper"
 )
 
 type CheckInResource struct {
@@ -39,12 +41,15 @@ func (cr *CheckInResource) CheckIn(c *gin.Context) {
 	now := time.Now()
 	content := c.PostForm("content")
 	uidString := c.PostForm("uid")
+	username := c.PostForm("user_name")
+	log.Printf("username: %s", username)
 	img := c.PostForm("img")
 	log.Print("Checkin user_id: " + uidString)
 	uid := bson.ObjectIdHex(uidString)
 	ciData := &mod.CheckIn{
 		Id_:         bson.NewObjectId(),
 		UserId:      uid,
+		UserName:    username,
 		Content:     content,
 		CreateAt:    now,
 		CreateDay:   now.Day(),
@@ -56,6 +61,7 @@ func (cr *CheckInResource) CheckIn(c *gin.Context) {
 		Timestamp:   now.Unix(),
 		Images:      strings.Split(img, "|"),
 	}
+	log.Printf("Checkin content: %s", *ciData)
 	err := cr.CollCI.Insert(ciData)
 	if err != nil {
 		panic(err)
@@ -80,16 +86,39 @@ func (cr *CheckInResource) CheckIn(c *gin.Context) {
 	c.JSON(http.StatusOK, now.Unix())
 }
 
+// ListCheckIn type
+const (
+	ListPersonal = iota
+	ListAll
+	ListSpecial
+)
+
 // ListCheckIn return all checkin records
 // Method: GET
 func (cr *CheckInResource) ListCheckIn(c *gin.Context) {
 	//col := cr.Mongo.DB("tidy").C("checkin")
-	uid := bson.ObjectIdHex(c.DefaultQuery("uid", ""))
+	//uid := bson.ObjectIdHex(c.DefaultQuery("uid", ""))
 	//objectId := bson.ObjectIdHex(id)
 	//log.Print("user_id: " + uid)
 	var ci []mod.CheckIn
 	//col.Find(bson.M{"user_id": uid}).All(&ci)
-	cr.CollCI.Find(bson.M{"user_id": uid}).All(&ci)
+	tp, err := strconv.Atoi(c.DefaultQuery("type", strconv.Itoa(ListPersonal)))
+	if err != nil {
+		tp = ListPersonal
+	}
+	switch tp {
+	case ListPersonal:
+		uid := bson.ObjectIdHex(c.DefaultQuery("uid", ""))
+		cr.CollCI.Find(bson.M{"user_id": uid}).All(&ci)
+	case ListAll:
+		cr.CollCI.Find(bson.M{}).All(&ci)
+	case ListSpecial:
+		spUID := bson.ObjectIdHex(c.DefaultQuery("special_uid", ""))
+		cr.CollCI.Find(bson.M{"user_id": spUID}).All(&ci)
+	default:
+		uid := bson.ObjectIdHex(c.DefaultQuery("uid", ""))
+		cr.CollCI.Find(bson.M{"user_id": uid}).All(&ci)
+	}
 	//col.Find(nil).All(&ci)
 	//log.Printf("%s", ci)
 	c.JSON(http.StatusOK, ci)

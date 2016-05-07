@@ -9,7 +9,7 @@ import (
 
 type User struct {
 	ID          bson.ObjectId `bson:"_id" json:"uid"`
-	UserName    string        `bson:"username" json:"username"`
+	UserName    string        `bson:"user_name" json:"user_name"`
 	Password    string        `bson:"password" json:"-"`
 	EMail       string        `bson:"email" json:"email"`
 	CreateAt    time.Time     `bson:"create_at" json:"-"`
@@ -19,15 +19,15 @@ type User struct {
 	LastCheckIn interface{}   `bson:"last_checkin" json:"last_checkin"`
 }
 
-func(u *User) CanCheckIn() bool {
+func (u *User) CanCheckIn() bool {
 	if u.LastCheckIn == nil {
 		return false
 	}
 	checkin := u.LastCheckIn.(ci.CheckIn)
 	now := time.Now()
 	if checkin.CreateYear == now.Year() &&
-			checkin.CreateMonth == int(now.Month()) &&
-			checkin.CreateDay == now.Day() {
+		checkin.CreateMonth == int(now.Month()) &&
+		checkin.CreateDay == now.Day() {
 		return true
 	}
 	return false
