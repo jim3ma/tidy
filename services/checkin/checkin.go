@@ -44,7 +44,7 @@ func (cr *CheckInResource) CheckIn(c *gin.Context) {
 	log.Print("Checkin user_id: " + uidString)
 	uid := bson.ObjectIdHex(uidString)
 	userinfo, err := cr.UserResource.QueryUserInfoByID(uidString)
-	log.Printf("User info: %s", userin)
+	log.Printf("User info: %s", userinfo)
 	if err != nil {
 		panic(err)
 	}
