@@ -58,6 +58,9 @@ func (ur *UserResource) NewUser(c *gin.Context) {
 		Portrait:   "avantar.png",
 		Continuous: 0,
 		//LastCheckIn:  ,
+		Setting: mod.Setting{
+				IMGUploadJS: "canvas.js",
+			},
 	}
 	err := ur.CollUser.Insert(user)
 

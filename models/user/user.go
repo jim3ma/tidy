@@ -17,6 +17,7 @@ type User struct {
 	Portrait    string        `bson:"portrait" json:"portrait"`
 	Continuous  int           `bson:"continuous" json:"continuous"`
 	LastCheckIn interface{}   `bson:"last_checkin" json:"last_checkin"`
+	Setting     Setting       `bson:"setting" json:"setting"`
 }
 
 func (u *User) CanCheckIn() bool {
