@@ -24,7 +24,6 @@ func (u *User) CanCheckIn() bool {
 	if u.LastCheckIn == nil {
 		return true
 	}
-	//log.Printf("Last checkin status: %s, current time: %s", u.LastCheckIn, time.Now())
 	ciData := new(ci.CheckIn)
 	if checkin, ok := u.LastCheckIn.(bson.M); ok {
 		if bson2Struct(&checkin, ciData) {
@@ -37,6 +36,36 @@ func (u *User) CanCheckIn() bool {
 		}
 	}
 	return true
+}
+
+// TBD
+func (u *User) CheckInStatus() (can bool, cont int) {
+	if u.LastCheckIn == nil {
+		can = true
+		cont = 1
+		return
+	}
+	//log.Printf("Last checkin status: %s, current time: %s", u.LastCheckIn, time.Now())
+	ciData := new(ci.CheckIn)
+	if checkin, ok := u.LastCheckIn.(bson.M); ok {
+		if bson2Struct(&checkin, ciData) {
+			now := time.Now()
+			if ciData.CreateYear == now.Year() &&
+				ciData.CreateAt.YearDay()+1 == now.YearDay() {
+				cont = u.Continuous + 1
+				can = true
+				return
+			} else if ciData.CreateYear == now.Year() &&
+				ciData.CreateAt.YearDay() == now.YearDay() {
+				cont = 1
+				can = false
+				return
+			}
+		}
+	}
+	can = true
+	cont = 1
+	return
 }
 
 func (u *User) CalcContinuous() int {
