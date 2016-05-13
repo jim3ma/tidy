@@ -78,11 +78,12 @@ func (cr *CheckInResource) CheckIn(c *gin.Context) {
 			"_id": uid,
 		},
 		bson.M{
-			"$inc": bson.M{
-				"continuous": 1,
-			},
+			//"$inc": bson.M{
+			//	"continuous": 1,
+			//},
 			"$set": bson.M{
 				"last_checkin": *ciData,
+				"continuous":   userinfo.CalcContinuous(),
 			},
 		})
 

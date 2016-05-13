@@ -27,16 +27,40 @@ func (u *User) CanCheckIn() bool {
 	//log.Printf("Last checkin status: %s, current time: %s", u.LastCheckIn, time.Now())
 	ciData := new(ci.CheckIn)
 	if checkin, ok := u.LastCheckIn.(bson.M); ok {
-		if cb, err := bson.Marshal(checkin); err == nil {
-			if err = bson.Unmarshal(cb, ciData); err == nil {
-				now := time.Now()
-				if ciData.CreateYear == now.Year() &&
-					ciData.CreateMonth == int(now.Month()) &&
-					ciData.CreateDay == now.Day() {
-					return false
-				}
+		if bson2Struct(&checkin, ciData) {
+			now := time.Now()
+			if ciData.CreateYear == now.Year() &&
+				ciData.CreateMonth == int(now.Month()) &&
+				ciData.CreateDay == now.Day() {
+				return false
 			}
 		}
 	}
 	return true
+}
+
+func (u *User) CalcContinuous() int {
+	if u.LastCheckIn == nil {
+		return 1
+	}
+	ciData := new(ci.CheckIn)
+	if checkin, ok := u.LastCheckIn.(bson.M); ok {
+		if bson2Struct(&checkin, ciData) {
+			now := time.Now()
+			if ciData.CreateYear == now.Year() &&
+				ciData.CreateAt.YearDay()+1 == now.YearDay() {
+				return u.Continuous + 1
+			}
+		}
+	}
+	return 1
+}
+
+func bson2Struct(bs *bson.M, st interface{}) bool {
+	if cb, err := bson.Marshal(bs); err == nil {
+		if err = bson.Unmarshal(cb, st); err == nil {
+			return true
+		}
+	}
+	return false
 }
