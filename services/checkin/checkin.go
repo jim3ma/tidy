@@ -120,57 +120,53 @@ func (cr *CheckInResource) ListCheckIn(c *gin.Context) {
 			strconv.FormatInt(time.Now().Unix(), 10),
 		),
 		10, 64)
-	log.Print(timestamp)
 	if tserr != nil {
 		timestamp = time.Now().Unix()
 	}
-	count, cnterr := strconv.Atoi(c.DefaultQuery("count", "50"))
+	count, cnterr := strconv.Atoi(c.DefaultQuery("count", "32"))
 	if cnterr != nil {
 		count = 32
 	}
+	var queryM bson.M
 	switch tp {
 	case ListPersonal:
 		uid := bson.ObjectIdHex(c.DefaultQuery("uid", ""))
 		log.Print(timestamp)
 		log.Print(count)
-		cr.CollCI.Find(
-			bson.M{
+		queryM = bson.M{
 				"user_id": uid,
 				"timestamp":
 					bson.M{
 						"$lt": timestamp,
 					},
-			}).Limit(count).All(&ci)
-		log.Print(ci)
+			}
 	case ListAll:
-		cr.CollCI.Find(
-			bson.M{
+		queryM = bson.M{
 				"timestamp":
 					bson.M{
 						"$lt": timestamp,
 					},
-			}).Limit(count).All(&ci)
+			}
 	case ListSpecial:
 		spUID := bson.ObjectIdHex(c.DefaultQuery("special_uid", ""))
-		cr.CollCI.Find(
-			bson.M{
+		queryM = bson.M{
 				"user_id": spUID,
 				"timestamp":
 					bson.M{
 						"$lt": timestamp,
 					},
-			}).Limit(count).All(&ci)
+			}
 	default:
 		uid := bson.ObjectIdHex(c.DefaultQuery("uid", ""))
-		cr.CollCI.Find(
-			bson.M{
+		queryM = bson.M{
 				"user_id": uid,
 				"timestamp":
 					bson.M{
 						"$lt": timestamp,
 					},
-			}).Limit(count).All(&ci)
+			}
 	}
+	cr.CollCI.Find(queryM).Limit(count).All(&ci)
 	//col.Find(nil).All(&ci)
 	//log.Printf("%s", ci)
 	c.JSON(http.StatusOK, ci)
