@@ -13,6 +13,7 @@ import (
 	jsonp "github.com/jim3mar/gin-jsonp"
 	cr "github.com/jim3mar/tidy/services/checkin"
 	ur "github.com/jim3mar/tidy/services/user"
+	"github.com/jim3mar/tidy/services/oauth2"
 	"github.com/jim3mar/tidy/utilities"
 	//"encoding/json"
 	//"time"
@@ -65,6 +66,9 @@ func (s *Service) Run(cfg Config) error {
 	svcCR.Init(mgoSession)
 	svcCR.UserResource = svcUR
 
+	svcWR := &oauth2.WeChatResource{}
+	svcWR.Init(mgoSession)
+
 	router := gin.New()
 	router.Use(gin.Logger())
 	router.Use(cors.Middleware(cors.Config{
@@ -88,6 +92,10 @@ func (s *Service) Run(cfg Config) error {
 		ci.POST("", svcCR.CheckIn)
 		//ci.POST("/uploadimg", svcCR.UploadImg)
 		ci.GET("", svcCR.ListCheckIn)
+
+		o := v1.Group("/oauth2")
+		o.GET("/wechat", svcWR.ExchangeToken)
+		o.GET("/wechat_url", svcWR.CreateAuthURL)
 
 		// user api: register and login
 		user := v1.Group("/user")
