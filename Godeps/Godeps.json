@@ -8,6 +8,22 @@
 			"Rev": "f0aeabca5a127c4078abb8c8d64298b147264b55"
 		},
 		{
+			"ImportPath": "github.com/chanxuehong/wechat.v2/internal/debug/api",
+			"Rev": "398eee29070e48611a6106b57fdbfdb8987cc8d8"
+		},
+		{
+			"ImportPath": "github.com/chanxuehong/wechat.v2/json",
+			"Rev": "398eee29070e48611a6106b57fdbfdb8987cc8d8"
+		},
+		{
+			"ImportPath": "github.com/chanxuehong/wechat.v2/mp/oauth2",
+			"Rev": "398eee29070e48611a6106b57fdbfdb8987cc8d8"
+		},
+		{
+			"ImportPath": "github.com/chanxuehong/wechat.v2/oauth2",
+			"Rev": "398eee29070e48611a6106b57fdbfdb8987cc8d8"
+		},
+		{
 			"ImportPath": "github.com/dgrijalva/jwt-go",
 			"Comment": "v2.6.0",
 			"Rev": "a2c85815a77d0f951e33ba4db5ae93629a1530af"
