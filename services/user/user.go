@@ -26,9 +26,9 @@ func (ur *UserResource) Init(session *mgo.Session) {
 	ur.CollUser = ur.Mongo.DB(db).C("user")
 }
 
-// NewUser add a user into mongo/tidy/user
+// RegisterUser add a user into mongo/tidy/user
 // return current timestamp if success
-func (ur *UserResource) NewUser(c *gin.Context) {
+func (ur *UserResource) RegisterUser(c *gin.Context) {
 	now := time.Now()
 	//col := ur.Mongo.DB("tidy").C("user")
 	//content := c.PostForm("content")
@@ -62,12 +62,16 @@ func (ur *UserResource) NewUser(c *gin.Context) {
 				IMGUploadJS: "canvas.js",
 			},
 	}
+	ur.CreateUser(user)
+        ur.CreateTokenR(c, user)
+}
+
+func (ur *UserResource) CreateUser(user *mod.User) {
 	err := ur.CollUser.Insert(user)
 
-	if err != nil {
-		panic(err)
-	}
-	ur.newTokenAndRet(c, user)
+        if err != nil {
+                panic(err)
+        }
 }
 
 func (ur *UserResource) IsAccountExist(username string, email string) bool {
@@ -143,10 +147,10 @@ func (ur *UserResource) AuthWithPassword(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, err)
 		return
 	}
-	ur.newTokenAndRet(c, user)
+	ur.CreateTokenR(c, user)
 }
 
-func (ur *UserResource) newTokenAndRet(c *gin.Context, user *mod.User) {
+func (ur *UserResource) CreateToken(user *mod.User) string {
 	tokenString, err := util.NewToken(
 		map[string]string{
 			"uid":       user.ID.Hex(),
@@ -155,9 +159,16 @@ func (ur *UserResource) newTokenAndRet(c *gin.Context, user *mod.User) {
 	if err != nil {
 		panic(err)
 	}
+	
+	return tokenString
+}
+
+// CreateTokenR create a new token with special user,
+// and put the response into c *gin.Context
+func (ur *UserResource) CreateTokenR(c *gin.Context, user *mod.User) {
 	c.JSON(http.StatusOK,
 		AuthReponse{
-			AuthToken: tokenString,
+			AuthToken: ur.CreateToken(user),
 			UserInfo:  *user,
 		})
 }

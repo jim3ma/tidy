@@ -2,16 +2,28 @@ package oauth2
 
 import (
 	//"fmt"
-	"gopkg.in/mgo.v2"
+	"encoding/json"
+	"log"
 	"net/http"
-	"github.com/gin-gonic/gin"
+	"time"
+
+        mu "github.com/jim3mar/tidy/models/user"
+        mwu "github.com/jim3mar/tidy/models/wechat"
 	mpo "github.com/chanxuehong/wechat.v2/mp/oauth2"
 	o "github.com/chanxuehong/wechat.v2/oauth2"
-	"log"
+	svcuser "github.com/jim3mar/tidy/services/user"
+
+	"github.com/spf13/viper"
+	"github.com/gin-gonic/gin"
+	"gopkg.in/mgo.v2"
+        "gopkg.in/mgo.v2/bson"
 )
 
 type WeChatResource struct {
-	Mongo       *mgo.Session
+	Mongo        *mgo.Session
+	CollWeChat   *mgo.Collection
+	UserResource *svcuser.UserResource
+
 	AppId       string
 	AppSecret   string
 	RedirectURI string
@@ -20,6 +32,10 @@ type WeChatResource struct {
 }
 
 func (w *WeChatResource) Init(session *mgo.Session) {
+	db := viper.GetString("mongo.db")
+	w.Mongo = session
+	w.CollWeChat = w.Mongo.DB(db).C("wechat")
+
 	w.AppId = "AppId"
 	w.AppSecret = "AppSecret"
 	w.RedirectURI = "http://api.ctidy.com/oauth/wechat"
@@ -54,6 +70,70 @@ func (w *WeChatResource) ExchangeToken(c *gin.Context) {
 		c.JSON(http.StatusNotFound, "Can not get userinfo!")
 		return
 	}
+	ex, chkerr := w.CheckUser(userinfo)
+	if chkerr != nil {
+		panic(chkerr)	
+	}
+	
+	if ex == false {
+		w.CreateUser(userinfo)
+	}
 
 	c.JSON(http.StatusOK, userinfo)
+}
+
+const (
+	WcUserExist = iota
+	WcUserNotExist
+	TiUserExist
+	TiUserNotExist
+)
+
+func (w *WeChatResource) CheckUser(rawUser *mpo.UserInfo) (bool, error) {
+	var wcUser mwu.WeChatUserInfo
+	err := w.CollWeChat.Find(bson.M{"openid": rawUser.OpenId}).One(&wcUser)
+	if err != nil {
+		return false, err
+	}
+	if wcUser.OpenId != rawUser.OpenId {
+		return false, nil
+	}
+	return true, nil
+}
+
+func (w *WeChatResource) CreateUser(rawUser *mpo.UserInfo) *mu.User {
+	b, err := json.Marshal(rawUser)
+	if err != nil {
+                panic(err)
+	}
+
+	var wcUser mwu.WeChatUserInfo
+	json.Unmarshal(b, &wcUser)
+
+	wcUser.Id_ = bson.NewObjectId()
+	uid := bson.NewObjectId()
+
+	err = w.CollWeChat.Insert(&wcUser)
+        if err != nil {
+                panic(err)
+        }
+
+	now := time.Now()
+	user := &mu.User{
+                ID:         uid,
+                UserName:   wcUser.Nickname,
+                Password:   "",
+                EMail:      "",
+                CreateAt:   now,
+                Timestamp:  now.Unix(),
+                Portrait:   wcUser.HeadImageURL,
+                Continuous: 0,
+                //LastCheckIn:  ,
+                Setting: mu.Setting{
+                                IMGUploadJS: "canvas.js",
+                        },
+        }
+	
+	w.UserResource.CreateUser(user)
+	return user
 }

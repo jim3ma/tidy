@@ -68,6 +68,7 @@ func (s *Service) Run(cfg Config) error {
 
 	svcWR := &oauth2.WeChatResource{}
 	svcWR.Init(mgoSession)
+	svcWR.UserResource = svcUR
 
 	router := gin.New()
 	router.Use(gin.Logger())
@@ -100,7 +101,7 @@ func (s *Service) Run(cfg Config) error {
 		// user api: register and login
 		user := v1.Group("/user")
 		user.POST("/uploadimg", svcCR.UploadImg)
-		user.POST("/register", svcUR.NewUser)
+		user.POST("/register", svcUR.RegisterUser)
 		user.GET("/query", svcUR.RegisterQuery)
 		user.GET("/login", svcUR.AuthWithPassword)
 
