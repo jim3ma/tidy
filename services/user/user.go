@@ -59,19 +59,19 @@ func (ur *UserResource) RegisterUser(c *gin.Context) {
 		Continuous: 0,
 		//LastCheckIn:  ,
 		Setting: mod.Setting{
-				IMGUploadJS: "canvas.js",
-			},
+			IMGUploadJS: "canvas.js",
+		},
 	}
 	ur.CreateUser(user)
-        ur.CreateTokenR(c, user)
+	ur.CreateTokenR(c, user)
 }
 
 func (ur *UserResource) CreateUser(user *mod.User) {
 	err := ur.CollUser.Insert(user)
 
-        if err != nil {
-                panic(err)
-        }
+	if err != nil {
+		panic(err)
+	}
 }
 
 func (ur *UserResource) IsAccountExist(username string, email string) bool {
@@ -159,7 +159,7 @@ func (ur *UserResource) CreateToken(user *mod.User) string {
 	if err != nil {
 		panic(err)
 	}
-	
+
 	return tokenString
 }
 

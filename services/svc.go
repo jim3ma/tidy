@@ -12,8 +12,8 @@ import (
 	"github.com/jim3mar/endless"
 	jsonp "github.com/jim3mar/gin-jsonp"
 	cr "github.com/jim3mar/tidy/services/checkin"
-	ur "github.com/jim3mar/tidy/services/user"
 	"github.com/jim3mar/tidy/services/oauth2"
+	ur "github.com/jim3mar/tidy/services/user"
 	"github.com/jim3mar/tidy/utilities"
 	//"encoding/json"
 	//"time"
@@ -96,6 +96,7 @@ func (s *Service) Run(cfg Config) error {
 
 		o := v1.Group("/oauth2")
 		o.GET("/wechat", svcWR.ExchangeToken)
+		o.POST("/wechat", svcWR.ExchangeToken)
 		o.GET("/wechat_url", svcWR.CreateAuthURL)
 
 		// user api: register and login

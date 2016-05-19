@@ -134,37 +134,33 @@ func (cr *CheckInResource) ListCheckIn(c *gin.Context) {
 		log.Print(timestamp)
 		log.Print(count)
 		queryM = bson.M{
-				"user_id": uid,
-				"timestamp":
-					bson.M{
-						"$lt": timestamp,
-					},
-			}
+			"user_id": uid,
+			"timestamp": bson.M{
+				"$lt": timestamp,
+			},
+		}
 	case ListAll:
 		queryM = bson.M{
-				"timestamp":
-					bson.M{
-						"$lt": timestamp,
-					},
-			}
+			"timestamp": bson.M{
+				"$lt": timestamp,
+			},
+		}
 	case ListSpecial:
 		spUID := bson.ObjectIdHex(c.DefaultQuery("special_uid", ""))
 		queryM = bson.M{
-				"user_id": spUID,
-				"timestamp":
-					bson.M{
-						"$lt": timestamp,
-					},
-			}
+			"user_id": spUID,
+			"timestamp": bson.M{
+				"$lt": timestamp,
+			},
+		}
 	default:
 		uid := bson.ObjectIdHex(c.DefaultQuery("uid", ""))
 		queryM = bson.M{
-				"user_id": uid,
-				"timestamp":
-					bson.M{
-						"$lt": timestamp,
-					},
-			}
+			"user_id": uid,
+			"timestamp": bson.M{
+				"$lt": timestamp,
+			},
+		}
 	}
 	cr.CollCI.Find(queryM).Limit(count).All(&ci)
 	//col.Find(nil).All(&ci)
