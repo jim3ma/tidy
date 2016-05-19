@@ -7,11 +7,12 @@ import (
 	"net/http"
 	"time"
 
-	mpo "github.com/chanxuehong/wechat.v2/mp/oauth2"
-	o "github.com/chanxuehong/wechat.v2/oauth2"
+	mpo "github.com/jim3mar/wechat.v2/mp/oauth2"
+	o "github.com/jim3mar/wechat.v2/oauth2"
 	mu "github.com/jim3mar/tidy/models/user"
 	mwu "github.com/jim3mar/tidy/models/wechat"
 	svcuser "github.com/jim3mar/tidy/services/user"
+	util "github.com/jim3mar/tidy/utilities"
 
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
@@ -144,9 +145,10 @@ func (w *WeChatResource) CreateUser(rawUser *mpo.UserInfo) *mu.User {
 	}
 
 	now := time.Now()
+	username := wcUser.Nickname + "_" + string(util.Krand(8, util.KC_RAND_KIND_ALL))
 	user := &mu.User{
 		ID:         uid,
-		UserName:   wcUser.Nickname,
+		UserName:   username,
 		Password:   "",
 		EMail:      "",
 		CreateAt:   now,

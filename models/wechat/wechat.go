@@ -12,9 +12,9 @@ const (
 )
 
 const (
-	SexUnknown = 0 // 未知
-	SexMale    = 1 // 男性
-	SexFemale  = 2 // 女性
+	SexUnknown = iota // 未知
+	SexMale           // 男性
+	SexFemale         // 女性
 )
 
 type WeChatUserInfo struct {
