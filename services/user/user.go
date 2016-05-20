@@ -20,6 +20,23 @@ type UserResource struct {
 	CollUser *mgo.Collection
 }
 
+type AuthReponse struct {
+	AuthToken string   `json:"auth_token"`
+	UserInfo  mod.User `json:"user_info"`
+	LoginInfo LoginInfo `json:"login_info"`
+}
+
+type LoginInfo struct {
+	Type int `json:"type"`
+	NewReg bool `json:"new_reg"`
+}
+
+const (
+	LTUnknow = iota
+	LTTidy
+	LTWeChat
+)
+
 func (ur *UserResource) Init(session *mgo.Session) {
 	db := viper.GetString("mongo.db")
 	ur.Mongo = session
@@ -63,7 +80,10 @@ func (ur *UserResource) RegisterUser(c *gin.Context) {
 		},
 	}
 	ur.CreateUser(user)
-	ur.CreateTokenR(c, user)
+	ur.RtAuthToken(c, user, LoginInfo{
+		Type: LTTidy,
+		NewReg: true,
+	})
 }
 
 func (ur *UserResource) CreateUser(user *mod.User) {
@@ -85,11 +105,6 @@ func (ur *UserResource) IsAccountExist(username string, email string) bool {
 		return true
 	}
 	return false
-}
-
-type AuthReponse struct {
-	AuthToken string   `json:"auth_token"`
-	UserInfo  mod.User `json:"user_info"`
 }
 
 func (ur *UserResource) RegisterQuery(c *gin.Context) {
@@ -147,7 +162,10 @@ func (ur *UserResource) AuthWithPassword(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, err)
 		return
 	}
-	ur.CreateTokenR(c, user)
+	ur.RtAuthToken(c, user, LoginInfo{
+		Type: LTTidy,
+		NewReg: true,
+	})
 }
 
 func (ur *UserResource) CreateToken(user *mod.User) string {
@@ -163,13 +181,14 @@ func (ur *UserResource) CreateToken(user *mod.User) string {
 	return tokenString
 }
 
-// CreateTokenR create a new token with special user,
+// RtAuthToken create a new token with special user,
 // and put the response into c *gin.Context
-func (ur *UserResource) CreateTokenR(c *gin.Context, user *mod.User) {
+func (ur *UserResource) RtAuthToken(c *gin.Context, user *mod.User, lgin LoginInfo) {
 	c.JSON(http.StatusOK,
 		AuthReponse{
 			AuthToken: ur.CreateToken(user),
 			UserInfo:  *user,
+			LoginInfo: lgin,
 		})
 }
 

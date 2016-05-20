@@ -39,7 +39,7 @@ func (w *WeChatResource) Init(session *mgo.Session) {
 
 	w.AppId = "wx2df1e835cf8fef8f"
 	w.AppSecret = "c02e50b35b81ac493711d9929defbb58"
-	w.RedirectURI = "http://api.ctidy.com/v1/oauth/wechat"
+	w.RedirectURI = "http://tf.ctidy.com/auth/wechat.html"
 	w.Scope = "snsapi_userinfo"
 	w.Endpoint = mpo.NewEndpoint(w.AppId, w.AppSecret)
 }
@@ -84,12 +84,18 @@ func (w *WeChatResource) ExchangeToken(c *gin.Context) {
 	}
 
 	var user *mu.User
+	var isNew bool
 	if wcUser == nil {
+		isNew = true
 		user = w.CreateUser(userinfo)
 	} else {
+		isNew = false
 		user = w.QueryUser(wcUser)
 	}
-	w.UserResource.CreateTokenR(c, user)
+	w.UserResource.RtAuthToken(c, user, svcuser.LoginInfo{
+		Type: svcuser.LTWeChat,
+		NewReg: isNew,
+	})
 	//c.JSON(http.StatusOK, userinfo)
 }
 
@@ -144,8 +150,13 @@ func (w *WeChatResource) CreateUser(rawUser *mpo.UserInfo) *mu.User {
 		panic(err)
 	}
 
+
+	username := wcUser.Nickname
+	users, qerr := w.UserResource.QueryUserInfoByName(username)
+	if qerr != nil || len(users) != 0 {
+		username = wcUser.Nickname + string(util.Krand(3, util.KC_RAND_KIND_ALL))
+	}
 	now := time.Now()
-	username := wcUser.Nickname + "_" + string(util.Krand(8, util.KC_RAND_KIND_ALL))
 	user := &mu.User{
 		ID:         uid,
 		UserName:   username,
