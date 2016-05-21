@@ -112,6 +112,10 @@ func (s *Service) Run(cfg Config) error {
 		userInfo.Use(utilities.JWTHandler())
 		userInfo.GET("", svcUR.QueryUserInfo)
 
+		updateSetting := user.Group("/update_setting")
+		updateSetting.Use(utilities.JWTHandler())
+		updateSetting.POST("", svcUR.UpdateSetting)
+
 		// static files
 		v1.Static("/static/images", "./tmp")
 		//v1.Static("/static", ".")

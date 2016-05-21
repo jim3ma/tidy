@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -251,4 +252,66 @@ func (ur *UserResource) QueryUserInfoByName(username string) ([]mod.User, error)
 func (ur *UserResource) queryUserHelp(query bson.M, pdata interface{}) error {
 	err := ur.CollUser.Find(query).One(pdata)
 	return err
+}
+
+func (ur *UserResource) UpdateSetting(c *gin.Context) {
+	oldPassword := c.PostForm("old_password")
+
+	var userInfo mod.User
+	uidString := c.PostForm("uid")
+	uid := bson.ObjectIdHex(uidString)
+	err := ur.CollUser.Find(
+		bson.M{
+			"_id": uid,
+			"password": util.Md5Sum(oldPassword),
+			}).One(&userInfo)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, "")
+	}
+
+	newUsername := c.PostForm("new_username")
+	newPassword := c.PostForm("new_password")
+
+	uploadMethod := c.PostForm("upload_method")
+	gender := c.PostForm("gender")
+
+	recvSysMsg := c.PostForm("recv_sysmsg")
+
+	log.Print(newUsername)
+	log.Print(oldPassword)
+	log.Print(newPassword)
+
+	//log.Print(uploadMethod)
+	//log.Print(gender)
+
+	// TBD
+	// need add message collection and features
+	log.Print(recvSysMsg)
+
+	igender,ierr := strconv.Atoi(gender)
+	if ierr != nil {
+		igender = 0
+	}
+	setting := mod.Setting{
+		IMGUploadJS: uploadMethod,
+		Gender: igender,
+	}
+
+	// TBD
+	// check new username
+	err = ur.CollUser.Update(
+		bson.M{
+			"_id": uid,
+		},
+		bson.M{
+			"$set": bson.M{
+				"user_name": newUsername,
+				"password":  util.Md5Sum(newPassword),
+				"setting": setting,
+			},
+		})
+
+	if err != nil {
+		panic(err)
+	}
 }
