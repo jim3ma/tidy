@@ -169,11 +169,12 @@ func (ur *UserResource) AuthWithPassword(c *gin.Context) {
 	})
 }
 
-func (ur *UserResource) CreateToken(user *mod.User) string {
+func (ur *UserResource) CreateToken(user *mod.User, login LoginInfo) string {
 	tokenString, err := util.NewToken(
 		map[string]string{
 			"uid":       user.ID.Hex(),
 			"user_name": user.UserName,
+			"login_type": strconv.Itoa(login.Type),
 		})
 	if err != nil {
 		panic(err)
@@ -184,12 +185,12 @@ func (ur *UserResource) CreateToken(user *mod.User) string {
 
 // RtAuthToken create a new token with special user,
 // and put the response into c *gin.Context
-func (ur *UserResource) RtAuthToken(c *gin.Context, user *mod.User, lgin LoginInfo) {
+func (ur *UserResource) RtAuthToken(c *gin.Context, user *mod.User, login LoginInfo) {
 	c.JSON(http.StatusOK,
 		AuthReponse{
-			AuthToken: ur.CreateToken(user),
+			AuthToken: ur.CreateToken(user, login),
 			UserInfo:  *user,
-			LoginInfo: lgin,
+			LoginInfo: login,
 		})
 }
 
@@ -255,19 +256,29 @@ func (ur *UserResource) queryUserHelp(query bson.M, pdata interface{}) error {
 }
 
 func (ur *UserResource) UpdateSetting(c *gin.Context) {
-	oldPassword := c.PostForm("old_password")
-
-	var userInfo mod.User
-	uidString := c.PostForm("uid")
-	uid := bson.ObjectIdHex(uidString)
-	err := ur.CollUser.Find(
-		bson.M{
-			"_id": uid,
-			"password": util.Md5Sum(oldPassword),
-			}).One(&userInfo)
+	tp, err := strconv.Atoi(c.PostForm("login_type"))
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, "")
+		return
 	}
+	log.Printf("login type: %d", tp)
+	switch tp {
+	case LTTidy:
+		ur.updateSettingTidy(c)
+	case LTWeChat:
+		ur.updateSetting(c)
+		//updateSettingWeChat(c)
+	case LTUnknow:
+		c.JSON(http.StatusUnauthorized, "")
+	default:
+		c.JSON(http.StatusUnauthorized, "")
+	}
+}
+
+func (ur *UserResource) updateSetting(c *gin.Context) {
+	uidString := c.PostForm("uid")
+	uid := bson.ObjectIdHex(uidString)
+	log.Printf("uid: %s", uidString)
 
 	newUsername := c.PostForm("new_username")
 	newPassword := c.PostForm("new_password")
@@ -277,16 +288,15 @@ func (ur *UserResource) UpdateSetting(c *gin.Context) {
 
 	recvSysMsg := c.PostForm("recv_sysmsg")
 
-	log.Print(newUsername)
-	log.Print(oldPassword)
-	log.Print(newPassword)
+	log.Printf("new username: %s", newUsername)
+	log.Printf("new password: %s", newPassword)
 
-	//log.Print(uploadMethod)
-	//log.Print(gender)
+	log.Printf("new upload method: %s", uploadMethod)
+	log.Printf("gender: %s", gender)
 
 	// TBD
 	// need add message collection and features
-	log.Print(recvSysMsg)
+	log.Printf("rece system message: %s", recvSysMsg)
 
 	igender,ierr := strconv.Atoi(gender)
 	if ierr != nil {
@@ -299,14 +309,14 @@ func (ur *UserResource) UpdateSetting(c *gin.Context) {
 
 	// TBD
 	// check new username
-	err = ur.CollUser.Update(
+	err := ur.CollUser.Update(
 		bson.M{
 			"_id": uid,
 		},
 		bson.M{
 			"$set": bson.M{
 				"user_name": newUsername,
-				"password":  util.Md5Sum(newPassword),
+				"password": util.Md5Sum(newPassword),
 				"setting": setting,
 			},
 		})
@@ -314,4 +324,27 @@ func (ur *UserResource) UpdateSetting(c *gin.Context) {
 	if err != nil {
 		panic(err)
 	}
+	c.JSON(http.StatusOK, "")
+}
+
+func (ur *UserResource) updateSettingTidy(c *gin.Context) {
+	oldPassword := c.PostForm("old_password")
+
+	var userInfo mod.User
+	uidString := c.PostForm("uid")
+	uid := bson.ObjectIdHex(uidString)
+
+	passwd := util.Md5Sum(oldPassword)
+	log.Printf("passwd: %s", passwd)
+
+	err := ur.CollUser.Find(
+		bson.M{
+			"_id": uid,
+			"password": passwd,
+			}).One(&userInfo)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, "")
+		return
+	}
+	ur.updateSetting(c)
 }
