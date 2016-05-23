@@ -3,13 +3,22 @@ FROM golang:1.6-alpine
 MAINTAINER Jim Mar <majinjing3@gmail.com>
 ENV CREATE_DATE 2016-05-03
 
-ENV TIDY_DIR /usr/share/tidy/
-ENV BUILD_DIR /go/src/github.com/jim3mar/tidy/
+ENV TIDY_DIR /usr/local/tidy
+ENV BUILD_DIR /go/src/github.com/jim3mar/tidy
+ENV BUILDTAGS debug
+ENV GOPATH /go
 
 ADD . ${BUILD_DIR}
+RUN cd ${BUILD_DIR} && \
+      CGO_ENABLED=0 go install -tags '$(BUILDTAGS)' . && \
+      mkdir -p ${TIDY_DIR}/ && \
+      cp ${GOPATH}/bin/tidy ${TIDY_DIR}/ && \
+      cp -vfr keys ${TIDY_DIR}/ && \
+  	  cp -vfr tidy.yaml ${TIDY_DIR}/ && \
+      rm -rf GOPATH
 
-WORKDIR /usr/share/tidy/
+WORKDIR /usr/local/tidy/
 
 EXPOSE 8089
 
-CMD ["/usr/share/tidy/tidy"]
+CMD ["/usr/local/tidy/tidy"]
