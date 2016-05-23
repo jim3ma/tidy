@@ -12,8 +12,9 @@ import (
 	"github.com/jim3mar/endless"
 	jsonp "github.com/jim3mar/gin-jsonp"
 	cr "github.com/jim3mar/tidy/services/checkin"
-	"github.com/jim3mar/tidy/services/oauth2"
+	sr "github.com/jim3mar/tidy/services/system"
 	ur "github.com/jim3mar/tidy/services/user"
+	"github.com/jim3mar/tidy/services/oauth2"
 	"github.com/jim3mar/tidy/utilities"
 	//"encoding/json"
 	//"time"
@@ -58,6 +59,9 @@ func (s *Service) Run(cfg Config) error {
 		return err
 	}
 	defer mgoSession.Close()
+
+	svcSR := &sr.SystemResource{}
+	svcSR.Init(mgoSession)
 
 	svcUR := &ur.UserResource{}
 	svcUR.Init(mgoSession)
@@ -105,6 +109,8 @@ func (s *Service) Run(cfg Config) error {
 		user.POST("/register", svcUR.RegisterUser)
 		user.GET("/query", svcUR.RegisterQuery)
 		user.GET("/login", svcUR.AuthWithPassword)
+
+		user.POST("/feedback", svcSR.CreateFeedback)
 
 		// user infomation
 		// need token
