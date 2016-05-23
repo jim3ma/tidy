@@ -3,29 +3,29 @@ FROM golang:1.6-alpine
 MAINTAINER Jim Mar <majinjing3@gmail.com>
 ENV CREATE_DATE 2016-05-03
 
-ENV TIDY_DIR /usr/share/tidy
-ENV BUILD_DIR /go/src/github.com/jim3mar
+ENV TIDY_DIR /usr/local/tidy
+ENV BUILD_DIR /go/src/github.com/jim3mar/tidy
+ENV BUILDTAGS debug
+ENV GOPATH /go
 
-ADD keys/* ${TIDY_DIR}/keys/
-#ADD tidy.yaml ${TIDY_DIR}
+ADD . ${BUILD_DIR}
 
-RUN apk add --no-cache --virtual .build-deps git && \
-        mkdir -p ${BUILD_DIR} && \
-        cd ${BUILD_DIR} && \
-        git clone -b dev https://github.com/jim3mar/tidy.git && \
-        cd tidy && git pull && git branch -v && \
-        sed -i "s/\"MONGODB_HOST\"/\"MONGODB_PORT_27017_TCP_ADDR\"/g" cmd/root.go && \
-        sed -i "s/\"MONGODB_PORT\"/\"MONGODB_PORT_27017_TCP_PORT\"/g" cmd/root.go && \
-        sed -i "s/\"MONGODB_DATABASE\"/\"MONGODB_INSTANCE_NAME\"/g" cmd/root.go && \
-        sed -i "s/\"8089\"/\"80\"/g" cmd/root.go && \
-        CGO_ENABLED=0 GOPATH=/go go build tidy.go && \
-        cp tidy ${TIDY_DIR}/ && mkdir -p ${TIDY_DIR}/tmp && \
-        (cd ${TIDY_DIR}/keys/; sh ${TIDY_DIR}/keys/key-gen.sh) && \
-        apk del .build-deps git && rm -rf ${BUILD_DIR}
+RUN cd ${BUILD_DIR} && \
+      sed -i "s/\"MONGODB_HOST\"/\"MONGODB_PORT_27017_TCP_ADDR\"/g" cmd/root.go && \
+      sed -i "s/\"MONGODB_PORT\"/\"MONGODB_PORT_27017_TCP_PORT\"/g" cmd/root.go && \
+      sed -i "s/\"MONGODB_DATABASE\"/\"MONGODB_INSTANCE_NAME\"/g" cmd/root.go && \
+      sed -i "s/\"8089\"/\"80\"/g" cmd/root.go && \
+      CGO_ENABLED=0 go install -tags '$(BUILDTAGS)' . && \
+      mkdir -p ${TIDY_DIR}/tmp && \
+      cp ${GOPATH}/bin/tidy ${TIDY_DIR}/ && \
+      cp -vfr keys ${TIDY_DIR}/ && \
+      cp -vfr tidy.yaml ${TIDY_DIR}/ && \
+      apk --no-cache add openssl && \
+      (cd ${TIDY_DIR}/keys/; sh ${TIDY_DIR}/keys/key-gen.sh) && \
+      rm -rf GOPATH
 
-WORKDIR /usr/share/tidy/
+WORKDIR /usr/local/tidy/
 
 EXPOSE 80
 
-CMD ["/usr/share/tidy/tidy", "serve"]
-
+CMD ["/usr/local/tidy/tidy", "serve"]

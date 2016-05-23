@@ -9,12 +9,15 @@ ENV BUILDTAGS debug
 ENV GOPATH /go
 
 ADD . ${BUILD_DIR}
+
 RUN cd ${BUILD_DIR} && \
       CGO_ENABLED=0 go install -tags '$(BUILDTAGS)' . && \
-      mkdir -p ${TIDY_DIR}/ && \
+      mkdir -p ${TIDY_DIR}/tmp && \
       cp ${GOPATH}/bin/tidy ${TIDY_DIR}/ && \
       cp -vfr keys ${TIDY_DIR}/ && \
   	  cp -vfr tidy.yaml ${TIDY_DIR}/ && \
+      apk --no-cache add openssl && \
+      (cd ${TIDY_DIR}/keys/; sh ${TIDY_DIR}/keys/key-gen.sh) && \
       rm -rf GOPATH
 
 WORKDIR /usr/local/tidy/
