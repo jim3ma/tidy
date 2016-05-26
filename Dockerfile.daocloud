@@ -11,9 +11,9 @@ ENV GOPATH /go
 ADD . ${BUILD_DIR}
 
 RUN cd ${BUILD_DIR} && \
-      sed -i "s/\"MONGODB_HOST\"/\"MONGODB_PORT_27017_TCP_ADDR\"/g" cmd/root.go && \
-      sed -i "s/\"MONGODB_PORT\"/\"MONGODB_PORT_27017_TCP_PORT\"/g" cmd/root.go && \
-      sed -i "s/\"MONGODB_DATABASE\"/\"MONGODB_INSTANCE_NAME\"/g" cmd/root.go && \
+      sed -i "s/\"TIDY_MONGODB_HOST\"/\"MONGODB_PORT_27017_TCP_ADDR\"/g" cmd/root.go && \
+      sed -i "s/\"TIDY_MONGODB_PORT\"/\"MONGODB_PORT_27017_TCP_PORT\"/g" cmd/root.go && \
+      sed -i "s/\"TIDY_MONGODB_DATABASE\"/\"MONGODB_INSTANCE_NAME\"/g" cmd/root.go && \
       sed -i "s/\"8089\"/\"80\"/g" cmd/root.go && \
       CGO_ENABLED=0 go install -tags '$(BUILDTAGS)' . && \
       mkdir -p ${TIDY_DIR}/tmp && \
