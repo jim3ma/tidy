@@ -11,3 +11,11 @@ mongo:
   username: tidy
   password: 111111
   db: tidy
+
+mail:
+  host: mail.ctidy.com
+  port: 587
+  authmailaddr: tidy@ctidy.com
+  authpasswd: 111111
+  mailfrom: tidy@ctidy.com
+  tlsskipverify: true
