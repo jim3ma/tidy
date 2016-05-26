@@ -94,11 +94,23 @@ func SetDefault() {
 func BindEnv() {
 	viper.BindEnv("host", "TIDY_HOST")
 	viper.BindEnv("port", "TIDY_PORT")
-	viper.BindEnv("mongo.host", "MONGODB_HOST")
-	viper.BindEnv("mongo.port", "MONGODB_PORT")
-	viper.BindEnv("mongo.username", "MONGODB_USERNAME")
-	viper.BindEnv("mongo.password", "MONGODB_PASSWORD")
-	viper.BindEnv("mongo.db", "MONGODB_DATABASE")
-	viper.BindEnv("jwt.pubkey", "JWT_PUBKEY_PATH")
-	viper.BindEnv("jwt.prikey", "JWT_PRIKEY_PATH")
+
+	// mongo
+	viper.BindEnv("mongo.host", "TIDY_MONGODB_HOST")
+	viper.BindEnv("mongo.port", "TIDY_MONGODB_PORT")
+	viper.BindEnv("mongo.username", "TIDY_MONGODB_USERNAME")
+	viper.BindEnv("mongo.password", "TIDY_MONGODB_PASSWORD")
+	viper.BindEnv("mongo.db", "TIDY_MONGODB_DATABASE")
+
+	// jwt
+	viper.BindEnv("jwt.pubkey", "TIDY_JWT_PUBKEY_PATH")
+	viper.BindEnv("jwt.prikey", "TIDY_JWT_PRIKEY_PATH")
+
+	// mail
+	viper.BindEnv("mail.host", "TIDY_MAIL_HOST")
+	viper.BindEnv("mail.port", "TIDY_MAIL_PORT")
+	viper.BindEnv("mail.authaddr", "TIDY_MAIL_AUTH_ADDR")
+	viper.BindEnv("mail.authpasswd", "TIDY_MAIL_AUTH_PASSWD")
+	viper.BindEnv("mail.sendfrom", "TIDY_MAIL_FROM")
+	viper.BindEnv("mail.tlsskipverify", "TIDY_MAIL_TLS_SKIP_VERIFY")
 }
