@@ -15,7 +15,7 @@ mongo:
 mail:
   host: mail.ctidy.com
   port: 587
-  authmailaddr: tidy@ctidy.com
-  authpasswd: 111111
-  mailfrom: tidy@ctidy.com
+  # authaddr:
+  # authpasswd:
+  # sendfrom: 
   tlsskipverify: true
