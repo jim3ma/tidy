@@ -61,16 +61,6 @@ func init() {
 
 }
 
-func getConfig() (services.Config, error) {
-	config := services.Config{}
-	config.ServiceHost = "0.0.0.0:8089"
-	config.MongoDBHosts = "127.0.0.1:27017"
-	config.MongoAuthUser = "tidy"
-	config.MongoAuthPass = "111111"
-	config.MongoAuthDB = "tidy"
-	return config, nil
-}
-
 func updateConfig(config *services.Config) {
 	config.ServiceHost = fmt.Sprintf("%s:%s",
 		viper.GetString("host"), viper.GetString("port"))
@@ -79,7 +69,7 @@ func updateConfig(config *services.Config) {
 	config.MongoAuthUser = viper.GetString("mongo.username")
 	config.MongoAuthPass = viper.GetString("mongo.password")
 	config.MongoAuthDB = viper.GetString("mongo.db")
-	fmt.Printf("current config: %s\n", config)
+	fmt.Printf("current config: %+v\n", *config)
 }
 
 func updateKeys() {
@@ -91,6 +81,7 @@ func updateKeys() {
 	}
 }
 
+// Main setup mongo session and launch Tidy service
 func Main() {
 	//cfg, _ := getConfig()
 	cfg := services.Config{}

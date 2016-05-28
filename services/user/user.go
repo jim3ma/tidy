@@ -2,6 +2,7 @@ package user
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -22,13 +23,13 @@ type UserResource struct {
 }
 
 type AuthReponse struct {
-	AuthToken string   `json:"auth_token"`
-	UserInfo  mod.User `json:"user_info"`
+	AuthToken string    `json:"auth_token"`
+	UserInfo  mod.User  `json:"user_info"`
 	LoginInfo LoginInfo `json:"login_info"`
 }
 
 type LoginInfo struct {
-	Type int `json:"type"`
+	Type   int  `json:"type"`
 	NewReg bool `json:"new_reg"`
 }
 
@@ -82,9 +83,12 @@ func (ur *UserResource) RegisterUser(c *gin.Context) {
 	}
 	ur.CreateUser(user)
 	ur.RtAuthToken(c, user, LoginInfo{
-		Type: LTTidy,
+		Type:   LTTidy,
 		NewReg: true,
 	})
+	if email != "" {
+		util.SendSysMail(email, fmt.Sprintf("Hello %s", username), "Welcome to Tidy")
+	}
 }
 
 func (ur *UserResource) CreateUser(user *mod.User) {
@@ -164,7 +168,7 @@ func (ur *UserResource) AuthWithPassword(c *gin.Context) {
 		return
 	}
 	ur.RtAuthToken(c, user, LoginInfo{
-		Type: LTTidy,
+		Type:   LTTidy,
 		NewReg: true,
 	})
 }
@@ -172,8 +176,8 @@ func (ur *UserResource) AuthWithPassword(c *gin.Context) {
 func (ur *UserResource) CreateToken(user *mod.User, login LoginInfo) string {
 	tokenString, err := util.NewToken(
 		map[string]string{
-			"uid":       user.ID.Hex(),
-			"user_name": user.UserName,
+			"uid":        user.ID.Hex(),
+			"user_name":  user.UserName,
 			"login_type": strconv.Itoa(login.Type),
 		})
 	if err != nil {
@@ -298,13 +302,13 @@ func (ur *UserResource) updateSetting(c *gin.Context) {
 	// need add message collection and features
 	log.Printf("rece system message: %s", recvSysMsg)
 
-	igender,ierr := strconv.Atoi(gender)
+	igender, ierr := strconv.Atoi(gender)
 	if ierr != nil {
 		igender = 0
 	}
 	setting := mod.Setting{
 		IMGUploadJS: uploadMethod,
-		Gender: igender,
+		Gender:      igender,
 	}
 
 	// TBD
@@ -316,8 +320,8 @@ func (ur *UserResource) updateSetting(c *gin.Context) {
 		bson.M{
 			"$set": bson.M{
 				"user_name": newUsername,
-				"password": util.Md5Sum(newPassword),
-				"setting": setting,
+				"password":  util.Md5Sum(newPassword),
+				"setting":   setting,
 			},
 		})
 
@@ -339,9 +343,9 @@ func (ur *UserResource) updateSettingTidy(c *gin.Context) {
 
 	err := ur.CollUser.Find(
 		bson.M{
-			"_id": uid,
+			"_id":      uid,
 			"password": passwd,
-			}).One(&userInfo)
+		}).One(&userInfo)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, "")
 		return

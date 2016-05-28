@@ -12,9 +12,9 @@ import (
 	"github.com/jim3mar/endless"
 	jsonp "github.com/jim3mar/gin-jsonp"
 	cr "github.com/jim3mar/tidy/services/checkin"
+	"github.com/jim3mar/tidy/services/oauth2"
 	sr "github.com/jim3mar/tidy/services/system"
 	ur "github.com/jim3mar/tidy/services/user"
-	"github.com/jim3mar/tidy/services/oauth2"
 	"github.com/jim3mar/tidy/utilities"
 	//"encoding/json"
 	//"time"
@@ -53,6 +53,7 @@ func (s *Service) getMgoSession(cfg Config) (*mgo.Session, error) {
 }
 
 func (s *Service) Run(cfg Config) error {
+	utilities.InitMailConfig()
 	mgoSession, err := s.getMgoSession(cfg)
 
 	if err != nil {

@@ -111,6 +111,6 @@ func BindEnv() {
 	viper.BindEnv("mail.port", "TIDY_MAIL_PORT")
 	viper.BindEnv("mail.authaddr", "TIDY_MAIL_AUTH_ADDR")
 	viper.BindEnv("mail.authpasswd", "TIDY_MAIL_AUTH_PASSWD")
-	viper.BindEnv("mail.sendfrom", "TIDY_MAIL_FROM")
+	viper.BindEnv("mail.sendfrom", "TIDY_MAIL_SEND_FROM")
 	viper.BindEnv("mail.tlsskipverify", "TIDY_MAIL_TLS_SKIP_VERIFY")
 }

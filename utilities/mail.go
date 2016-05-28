@@ -7,29 +7,48 @@ import (
 	"net"
 	"net/mail"
 	"net/smtp"
+
+	"github.com/spf13/viper"
 )
 
+// MailConfig contains all configuration for mail
 type MailConfig struct {
 	AuthMailAddr  string
 	AuthPassword  string
-	MailFrom      string
-	SmtpHost      string
-	TlsSkipVerify bool
+	SendFrom      string
+	SMTPHost      string
+	TLSSkipVerify bool
 }
 
 var config MailConfig
 
 // StartTLS Email
-func InitConfig(c MailConfig) {
-	config = c
+
+// InitMailConfig setup mail configuration
+func InitMailConfig() {
+	config.AuthMailAddr = viper.GetString("mail.authaddr")
+	config.AuthPassword = viper.GetString("mail.authpasswd")
+	config.SMTPHost = fmt.Sprintf("%s:%s",
+		viper.GetString("mail.host"), viper.GetString("mail.port"))
+	config.SendFrom = viper.GetString("mail.sendfrom")
+	config.TLSSkipVerify = viper.GetBool("mail.tlsskipverify")
+	log.Printf("current mail config: %+v", config)
 }
 
+//SendSysMail use global variable config for default smtp settings.
+//just put mailto, subject, and body
 func SendSysMail(mailto string, subject string, body string) error {
 
-	from := mail.Address{"", config.MailFrom}
-	to := mail.Address{"", mailto}
+	from := mail.Address{
+		Name:    "",
+		Address: config.SendFrom,
+	}
+	to := mail.Address{
+		Name:    "",
+		Address: mailto,
+	}
 	//subject := "This is the email subject"
-	body := "This is a body.\n With two lines."
+	//body := "This is a body.\n With two lines."
 
 	// Setup headers
 	headers := make(map[string]string)
@@ -45,17 +64,17 @@ func SendSysMail(mailto string, subject string, body string) error {
 	message += "\r\n" + body
 
 	// Connect to the SMTP Server
-	host, _, _ := net.SplitHostPort(config.SmtpHost)
+	host, _, _ := net.SplitHostPort(config.SMTPHost)
 
 	auth := smtp.PlainAuth("", config.AuthMailAddr, config.AuthPassword, host)
 
 	// TLS config
 	tlsconfig := &tls.Config{
-		InsecureSkipVerify: config.TlsSkipVerify,
+		InsecureSkipVerify: config.TLSSkipVerify,
 		ServerName:         host,
 	}
 
-	c, err := smtp.Dial(config.SmtpHost)
+	c, err := smtp.Dial(config.SMTPHost)
 	if err != nil {
 		log.Panic(err)
 	}
@@ -64,34 +83,34 @@ func SendSysMail(mailto string, subject string, body string) error {
 
 	// Auth
 	if err = c.Auth(auth); err != nil {
-		log.Panic(err)
+		return err
 	}
 
 	// To && From
 	if err = c.Mail(from.Address); err != nil {
-		log.Panic(err)
+		return err
 	}
 
 	if err = c.Rcpt(to.Address); err != nil {
-		log.Panic(err)
+		return err
 	}
 
 	// Data
 	w, err := c.Data()
 	if err != nil {
-		log.Panic(err)
+		return err
 	}
 
 	_, err = w.Write([]byte(message))
 	if err != nil {
-		log.Panic(err)
+		return err
 	}
 
 	err = w.Close()
 	if err != nil {
-		log.Panic(err)
+		return err
 	}
 
 	c.Quit()
-
+	return nil
 }
