@@ -259,6 +259,29 @@ func (ur *UserResource) queryUserHelp(query bson.M, pdata interface{}) error {
 	return err
 }
 
+func (ur *UserResource) UpdatePortrait(c *gin.Context) {
+	uidString := c.PostForm("uid")
+	uid := bson.ObjectIdHex(uidString)
+	log.Printf("uid: %s", uidString)
+
+	portrait := c.PostForm("portrait")
+
+	err := ur.CollUser.Update(
+		bson.M{
+			"_id": uid,
+		},
+		bson.M{
+			"$set": bson.M{
+				"portrait": portrait,
+			},
+		})
+
+	if err != nil {
+		panic(err)
+	}
+	c.JSON(http.StatusOK, "")
+}
+
 func (ur *UserResource) UpdateSetting(c *gin.Context) {
 	tp, err := strconv.Atoi(c.PostForm("login_type"))
 	if err != nil {

@@ -122,6 +122,7 @@ func (s *Service) Run(cfg Config) error {
 		updateSetting := user.Group("/update_setting")
 		updateSetting.Use(utilities.JWTHandler())
 		updateSetting.POST("", svcUR.UpdateSetting)
+		updateSetting.POST("/portrait", svcUR.UpdatePortrait)
 
 		// static files
 		v1.Static("/static/images", "./tmp")
