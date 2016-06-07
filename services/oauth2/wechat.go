@@ -65,7 +65,7 @@ func (w *WeChatResource) ExchangeToken(c *gin.Context) {
 	}
 
 	token, err := client.ExchangeToken(code)
-	log.Printf("token: %s, err: %s", token, err)
+	log.Printf("token: %+v, err: %+v", token, err)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, "Exchage token failed, code error!")
 		return
@@ -73,7 +73,7 @@ func (w *WeChatResource) ExchangeToken(c *gin.Context) {
 
 	userinfo, err := mpo.GetUserInfo(token.AccessToken, token.OpenId, "", nil)
 	//userinfo, err := mpo.GetUserInfo("OezXcEiiBSKSxW0eoylIeAs5Md6Fpld34iFDYCBQq8sCIPv0MqBa7Z4bjiHxdYKvtNZUkJzwdsAtKOouwmuK-lh7x2wmOrIji_F8b41mCNfTffqX3oBcRUylCYhDFN8s", "oRYmewVi4lTN5dEc_RquC1fqMZ3k", "", nil)
-	log.Printf("user info: %s, err:%s", userinfo, err)
+	log.Printf("user info: %+v, err:%+v", userinfo, err)
 	if err != nil {
 		c.JSON(http.StatusNotFound, "Can not get userinfo!")
 		return
@@ -139,7 +139,7 @@ func (w *WeChatResource) CreateUser(rawUser *mpo.UserInfo) *mu.User {
 
 	var wcUser mwu.WeChatUserInfo
 	json.Unmarshal(b, &wcUser)
-	log.Printf("WcUser: %s", wcUser)
+	log.Printf("WcUser: %+v", wcUser)
 
 	wcUser.Id_ = bson.NewObjectId()
 	uid := bson.NewObjectId()
@@ -171,7 +171,7 @@ func (w *WeChatResource) CreateUser(rawUser *mpo.UserInfo) *mu.User {
 		},
 	}
 
-	log.Printf("TiUser: %s", user)
+	log.Printf("TiUser: %+v", user)
 	w.UserResource.CreateUser(user)
 	return user
 }

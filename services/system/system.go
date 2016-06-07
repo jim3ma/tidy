@@ -1,15 +1,15 @@
 package system
 
 import (
-    "github.com/spf13/viper"
+	"github.com/spf13/viper"
 	"gopkg.in/mgo.v2"
 	//"gopkg.in/mgo.v2/bson"
 )
 
 type SystemResource struct {
-	Mongo    *mgo.Session
-	CollSys  *mgo.Collection
-    CollFeedback *mgo.Collection
+	Mongo        *mgo.Session
+	CollSys      *mgo.Collection
+	CollFeedback *mgo.Collection
 }
 
 func (sr *SystemResource) Init(session *mgo.Session) {
