@@ -93,7 +93,7 @@ func (w *WeChatResource) ExchangeToken(c *gin.Context) {
 		user = w.QueryUser(wcUser)
 	}
 	w.UserResource.RtAuthToken(c, user, svcuser.LoginInfo{
-		Type: svcuser.LTWeChat,
+		Type:   svcuser.LTWeChat,
 		NewReg: isNew,
 	})
 	//c.JSON(http.StatusOK, userinfo)
@@ -149,7 +149,6 @@ func (w *WeChatResource) CreateUser(rawUser *mpo.UserInfo) *mu.User {
 	if err != nil {
 		panic(err)
 	}
-
 
 	username := wcUser.Nickname
 	users, qerr := w.UserResource.QueryUserInfoByName(username)

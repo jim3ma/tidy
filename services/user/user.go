@@ -74,7 +74,7 @@ func (ur *UserResource) RegisterUser(c *gin.Context) {
 		EMail:      email,
 		CreateAt:   now,
 		Timestamp:  now.Unix(),
-		Portrait:   "avantar.png",
+		Portrait:   "http://m.ctidy.com/logo/logo-128x128.png",
 		Continuous: 0,
 		//LastCheckIn:  ,
 		Setting: mod.Setting{
