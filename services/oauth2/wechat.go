@@ -141,7 +141,7 @@ func (w *WeChatResource) CreateUser(rawUser *mpo.UserInfo) *mu.User {
 	json.Unmarshal(b, &wcUser)
 	log.Printf("WcUser: %+v", wcUser)
 
-	wcUser.Id_ = bson.NewObjectId()
+	wcUser.ID = bson.NewObjectId()
 	uid := bson.NewObjectId()
 	wcUser.UserId = uid
 

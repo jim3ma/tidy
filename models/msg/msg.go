@@ -7,7 +7,7 @@ import (
 )
 
 type Msg struct {
-	Id_       bson.ObjectId `bson:"_id" json:"id"`
+	ID        bson.ObjectId `bson:"_id" json:"id"`
 	From      bson.ObjectId `bson:"from" json:"from"`
 	To        bson.ObjectId `bson:"to" json:"to"`
 	Content   string        `bson:"content" json:"content"`

@@ -74,6 +74,8 @@ func JWTHandler() gin.HandlerFunc {
 			tokenString = c.DefaultQuery("auth_token", "")
 		case "POST":
 			tokenString = c.DefaultPostForm("auth_token", "")
+		case "PUT":
+			tokenString = c.DefaultPostForm("auth_token", "")
 		default:
 			tokenString = ""
 		}
@@ -98,6 +100,7 @@ func JWTHandler() gin.HandlerFunc {
 		return
 	}
 }
+
 func appendGetParameter(c *gin.Context, token *jwt.Token) {
 	for key, val := range token.Claims {
 		if str, ok := val.(string); ok {
@@ -110,6 +113,25 @@ func appendGetParameter(c *gin.Context, token *jwt.Token) {
 		}
 	}
 	log.Printf("Auth parameter: %s", c.Request.URL.RawQuery)
+}
+
+func appendPostParameter(c *gin.Context, token *jwt.Token) {
+	if c.Request.PostForm == nil {
+		log.Print("nil postform data")
+		c.Request.PostForm = url.Values{}
+	}
+	//c.Request.PostForm.Set("uid", token.Claims["uid"].(string))
+	//c.Request.PostForm.Set("user_name", token.Claims["user_name"].(string))
+	for key, val := range token.Claims {
+		if str, ok := val.(string); ok {
+			c.Request.PostForm.Set(key, str)
+			continue
+		}
+		if stringer, ok := val.(fmt.Stringer); ok {
+			c.Request.PostForm.Set(key, stringer.String())
+			continue
+		}
+	}
 }
 func appendParameter(c *gin.Context, token *jwt.Token) {
 	switch c.Request.Method {
@@ -135,24 +157,11 @@ func appendParameter(c *gin.Context, token *jwt.Token) {
 	case "POST":
 		//log.Print(c.Request.PostForm)
 		//log.Print(c.Request)
-		if c.Request.PostForm == nil {
-			log.Print("nil postform data")
-			c.Request.PostForm = url.Values{}
-		}
-		//c.Request.PostForm.Set("uid", token.Claims["uid"].(string))
-		//c.Request.PostForm.Set("user_name", token.Claims["user_name"].(string))
-		for key, val := range token.Claims {
-			if str, ok := val.(string); ok {
-				c.Request.PostForm.Set(key, str)
-				continue
-			}
-			if stringer, ok := val.(fmt.Stringer); ok {
-				c.Request.PostForm.Set(key, stringer.String())
-				continue
-			}
-		}
+		appendPostParameter(c, token)
 		//uid := c.DefaultPostForm("uid", "none")
 		//log.Print(uid)
+	case "PUT":
+		appendPostParameter(c, token)
 	default:
 		appendGetParameter(c, token)
 	}

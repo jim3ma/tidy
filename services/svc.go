@@ -96,6 +96,7 @@ func (s *Service) Run(cfg Config) error {
 		ci := v1.Group("/checkin")
 		ci.Use(utilities.JWTHandler())
 		ci.POST("", svcCR.CheckIn)
+		ci.PUT("", svcCR.EditCheckIn)
 		//ci.POST("/uploadimg", svcCR.UploadImg)
 		ci.GET("", svcCR.ListCheckIn)
 

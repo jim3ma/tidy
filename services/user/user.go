@@ -33,6 +33,7 @@ type LoginInfo struct {
 	NewReg bool `json:"new_reg"`
 }
 
+// Login type
 const (
 	LTUnknow = iota
 	LTTidy

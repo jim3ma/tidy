@@ -18,7 +18,7 @@ const (
 )
 
 type WeChatUserInfo struct {
-	Id_      bson.ObjectId `bson:"_id" json:"id"`
+	ID       bson.ObjectId `bson:"_id" json:"id"`
 	UserId   bson.ObjectId `bson:"user_id" json:"user_id"`
 	OpenId   string        `bson:"openid" json:"openid"`     // 用户的唯一标识
 	Nickname string        `bson:"nickname" json:"nickname"` // 用户昵称

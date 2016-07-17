@@ -27,7 +27,7 @@ func (sr *SystemResource) CreateFeedback(c *gin.Context) {
 		return
 	}
 	fd := &ms.Feedback{
-		Id_:       bson.NewObjectId(),
+		ID:        bson.NewObjectId(),
 		UserName:  username,
 		Content:   content,
 		Timestamp: now.Unix(),

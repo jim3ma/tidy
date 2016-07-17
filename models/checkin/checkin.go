@@ -6,9 +6,10 @@ import (
 	"time"
 )
 
+// CheckIn data
 type CheckIn struct {
-	Id_         bson.ObjectId `bson:"_id" json:"id"`
-	UserId      bson.ObjectId `bson:"user_id" json:"user_id"`
+	ID          bson.ObjectId `bson:"_id" json:"id"`
+	UserID      bson.ObjectId `bson:"user_id" json:"user_id"`
 	UserName    string        `bson:"user_name" json:"user_name"`
 	Content     string        `bson:"content" json:"content"`
 	CreateAt    time.Time     `bson:"create_at" json:"create_at"`
@@ -20,4 +21,5 @@ type CheckIn struct {
 	CreateSec   int           `bson:"create_sec" json:"create_sec"`
 	Timestamp   int64         `bson:"timestamp" json:"timestamp"`
 	Images      []string      `bson:"images" json:"images"`
+	Deleted     bool          `bson:"deleted" json:"deleted"`
 }

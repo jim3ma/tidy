@@ -32,6 +32,92 @@ func (cr *CheckInResource) Init(session *mgo.Session) {
 	cr.CollUser = cr.Mongo.DB(db).C("user")
 }
 
+func (cr *CheckInResource) canEditCheckIn(uid bson.ObjectId, cid bson.ObjectId) bool {
+	var ci mod.CheckIn
+	cr.CollCI.Find(
+		bson.M{
+			"_id": cid,
+		},
+	).One(&ci)
+	if ci.UserID == uid {
+		return true
+	}
+	return false
+}
+
+// EditCheckIn will add a new checkin to replace old checkin
+// Method: PUT
+func (cr *CheckInResource) EditCheckIn(c *gin.Context) {
+	// old checkin id
+	cid := bson.ObjectIdHex(c.PostForm("id"))
+
+	content := c.PostForm("content")
+	username := c.PostForm("user_name")
+	img := c.PostForm("img")
+	uid := bson.ObjectIdHex(c.PostForm("uid"))
+
+	log.Print("Checkin user_id: " + uid.Hex())
+
+	userinfo, err := cr.UserResource.QueryUserInfoByID(uid.Hex())
+	log.Printf("User info: %+v", userinfo)
+	if err != nil {
+		panic(err)
+	}
+	var ci mod.CheckIn
+	cr.CollCI.Find(
+		bson.M{
+			"_id":     cid,
+			"deleted": false,
+		},
+	).One(&ci)
+	if ci.UserID != uid {
+		log.Printf("user_id: %s, the owner of checkin isn't this user", uid)
+		c.JSON(http.StatusForbidden, "Error user for this checkin")
+		return
+	}
+
+	now := time.Now()
+	ciData := &mod.CheckIn{
+		ID:          bson.NewObjectId(),
+		UserID:      uid,
+		UserName:    username,
+		Content:     content,
+		CreateAt:    ci.CreateAt,
+		CreateDay:   ci.CreateDay,
+		CreateMonth: ci.CreateMonth,
+		CreateYear:  ci.CreateYear,
+		CreateHour:  ci.CreateHour,
+		CreateMin:   ci.CreateMin,
+		CreateSec:   ci.CreateSec,
+		Timestamp:   ci.Timestamp,
+		Images:      strings.Split(img, "|"),
+		Deleted:     false,
+	}
+	//log.Printf("Checkin content: %s", *ciData)
+	// insert updated checkin
+	err = cr.CollCI.Insert(ciData)
+	if err != nil {
+		panic(err)
+	}
+
+	// tag old checkin deleted
+	err = cr.CollCI.Update(
+		bson.M{
+			"_id": cid,
+		},
+		bson.M{
+			"$set": bson.M{
+				"deleted": true,
+			},
+		})
+
+	if err != nil {
+		panic(err)
+	}
+
+	c.JSON(http.StatusOK, now.Unix())
+}
+
 // CheckIn do checkin task for special user id
 // Method: POST
 func (cr *CheckInResource) CheckIn(c *gin.Context) {
@@ -54,8 +140,8 @@ func (cr *CheckInResource) CheckIn(c *gin.Context) {
 		return
 	}
 	ciData := &mod.CheckIn{
-		Id_:         bson.NewObjectId(),
-		UserId:      uid,
+		ID:          bson.NewObjectId(),
+		UserID:      uid,
 		UserName:    username,
 		Content:     content,
 		CreateAt:    now,
@@ -138,12 +224,14 @@ func (cr *CheckInResource) ListCheckIn(c *gin.Context) {
 			"timestamp": bson.M{
 				"$lt": timestamp,
 			},
+			"deleted": false,
 		}
 	case ListAll:
 		queryM = bson.M{
 			"timestamp": bson.M{
 				"$lt": timestamp,
 			},
+			"deleted": false,
 		}
 	case ListSpecial:
 		spUID := bson.ObjectIdHex(c.DefaultQuery("special_uid", ""))
@@ -152,6 +240,7 @@ func (cr *CheckInResource) ListCheckIn(c *gin.Context) {
 			"timestamp": bson.M{
 				"$lt": timestamp,
 			},
+			"deleted": false,
 		}
 	default:
 		uid := bson.ObjectIdHex(c.DefaultQuery("uid", ""))
@@ -160,6 +249,7 @@ func (cr *CheckInResource) ListCheckIn(c *gin.Context) {
 			"timestamp": bson.M{
 				"$lt": timestamp,
 			},
+			"deleted": false,
 		}
 	}
 	cr.CollCI.Find(queryM).Limit(count).All(&ci)
