@@ -49,7 +49,7 @@ func (cr *CheckInResource) canEditCheckIn(uid bson.ObjectId, cid bson.ObjectId) 
 // Method: PUT
 func (cr *CheckInResource) EditCheckIn(c *gin.Context) {
 	// old checkin id
-	cid := bson.ObjectIdHex(c.PostForm("id"))
+	cid := bson.ObjectIdHex(c.PostForm("cid"))
 
 	content := c.PostForm("content")
 	username := c.PostForm("user_name")
@@ -92,6 +92,7 @@ func (cr *CheckInResource) EditCheckIn(c *gin.Context) {
 		Timestamp:   ci.Timestamp,
 		Images:      strings.Split(img, "|"),
 		Deleted:     false,
+		Public:      false,
 	}
 	//log.Printf("Checkin content: %s", *ciData)
 	// insert updated checkin
@@ -183,9 +184,66 @@ func (cr *CheckInResource) CheckIn(c *gin.Context) {
 // ListCheckIn type
 const (
 	ListPersonal = iota
-	ListAll
-	ListSpecial
+	ListAllPublic
+	ListSpecialPersonal
+	ListPersonalWithCID
 )
+
+func (cr *CheckInResource) changePublic(c *gin.Context, pub bool) {
+	uid := bson.ObjectIdHex(c.PostForm("uid"))
+	cid := bson.ObjectIdHex(c.PostForm("cid"))
+	err := cr.CollCI.Update(
+		bson.M{
+			"_id":     cid,
+			"user_id": uid,
+		},
+		bson.M{
+			"$set": bson.M{
+				"public": pub,
+			},
+		})
+
+	if err != nil {
+		panic(err)
+	}
+
+	c.JSON(http.StatusOK, "success!")
+}
+
+// MakeCIPublic change the checkin to public
+// Method: PUT
+func (cr *CheckInResource) MakeCIPublic(c *gin.Context) {
+	cr.changePublic(c, true)
+}
+
+// MakeCIPrivate change the checkin to private
+// Method: PUT
+func (cr *CheckInResource) MakeCIPrivate(c *gin.Context) {
+	cr.changePublic(c, false)
+}
+
+// DeleteCheckIn tag the checkin deleted
+// Method: DELETE
+func (cr *CheckInResource) DeleteCheckIn(c *gin.Context) {
+	uid := bson.ObjectIdHex(c.Query("uid"))
+	cid := bson.ObjectIdHex(c.Query("cid"))
+	err := cr.CollCI.Update(
+		bson.M{
+			"_id":     cid,
+			"user_id": uid,
+		},
+		bson.M{
+			"$set": bson.M{
+				"deleted": true,
+			},
+		})
+
+	if err != nil {
+		panic(err)
+	}
+
+	c.JSON(http.StatusOK, "success")
+}
 
 // ListCheckIn return all checkin records
 // Method: GET
@@ -226,14 +284,28 @@ func (cr *CheckInResource) ListCheckIn(c *gin.Context) {
 			},
 			"deleted": false,
 		}
-	case ListAll:
+	case ListPersonalWithCID:
+		uid := bson.ObjectIdHex(c.DefaultQuery("uid", ""))
+		cid := bson.ObjectIdHex(c.DefaultQuery("cid", ""))
+		log.Print(timestamp)
+		log.Print(count)
 		queryM = bson.M{
+			"_id":     cid,
+			"user_id": uid,
 			"timestamp": bson.M{
 				"$lt": timestamp,
 			},
 			"deleted": false,
 		}
-	case ListSpecial:
+	case ListAllPublic:
+		queryM = bson.M{
+			"timestamp": bson.M{
+				"$lt": timestamp,
+			},
+			"deleted": false,
+			"public":  true,
+		}
+	case ListSpecialPersonal:
 		spUID := bson.ObjectIdHex(c.DefaultQuery("special_uid", ""))
 		queryM = bson.M{
 			"user_id": spUID,
@@ -241,6 +313,7 @@ func (cr *CheckInResource) ListCheckIn(c *gin.Context) {
 				"$lt": timestamp,
 			},
 			"deleted": false,
+			"public":  true,
 		}
 	default:
 		uid := bson.ObjectIdHex(c.DefaultQuery("uid", ""))
@@ -250,6 +323,7 @@ func (cr *CheckInResource) ListCheckIn(c *gin.Context) {
 				"$lt": timestamp,
 			},
 			"deleted": false,
+			"public":  true,
 		}
 	}
 	cr.CollCI.Find(queryM).Limit(count).All(&ci)

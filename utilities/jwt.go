@@ -76,11 +76,19 @@ func JWTHandler() gin.HandlerFunc {
 			tokenString = c.DefaultPostForm("auth_token", "")
 		case "PUT":
 			tokenString = c.DefaultPostForm("auth_token", "")
+		case "DELETE":
+			tokenString = c.DefaultQuery("auth_token", "")
 		default:
-			tokenString = ""
+			tokenString = c.DefaultPostForm("auth_token", "")
 		}
 
 		// for TESTING
+		//log.Print(c)
+		//log.Print(c.Keys)
+		//log.Print(c.Params)
+		//log.Print(c.Request)
+		//log.Print(c.Request.Form)
+		//log.Print(c.Request.PostForm)
 		//tokenString, _ = NewToken(map[string]string{"uid": "tidy uid tidy-uid"})
 		// for TESTING
 
@@ -162,6 +170,8 @@ func appendParameter(c *gin.Context, token *jwt.Token) {
 		//log.Print(uid)
 	case "PUT":
 		appendPostParameter(c, token)
+	case "DELETE":
+		appendGetParameter(c, token)
 	default:
 		appendGetParameter(c, token)
 	}

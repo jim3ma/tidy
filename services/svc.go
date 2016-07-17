@@ -95,10 +95,15 @@ func (s *Service) Run(cfg Config) error {
 		// need token
 		ci := v1.Group("/checkin")
 		ci.Use(utilities.JWTHandler())
+
 		ci.POST("", svcCR.CheckIn)
 		ci.PUT("", svcCR.EditCheckIn)
-		//ci.POST("/uploadimg", svcCR.UploadImg)
 		ci.GET("", svcCR.ListCheckIn)
+		ci.DELETE("", svcCR.DeleteCheckIn)
+
+		ci.PUT("/public", svcCR.MakeCIPublic)
+		ci.PUT("/private", svcCR.MakeCIPrivate)
+		//ci.POST("/uploadimg", svcCR.UploadImg)
 
 		o := v1.Group("/oauth2")
 		o.GET("/wechat", svcWR.ExchangeToken)

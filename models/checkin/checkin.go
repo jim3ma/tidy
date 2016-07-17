@@ -22,4 +22,5 @@ type CheckIn struct {
 	Timestamp   int64         `bson:"timestamp" json:"timestamp"`
 	Images      []string      `bson:"images" json:"images"`
 	Deleted     bool          `bson:"deleted" json:"deleted"`
+	Public      bool          `bson:"public" json:"public"`
 }
