@@ -5,9 +5,10 @@ package mongo
 import (
 	"encoding/json"
 	"fmt"
+	//"log"
+	log "github.com/Sirupsen/logrus"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
-	"log"
 	"strings"
 	"time"
 )
@@ -49,7 +50,7 @@ type (
 
 // Startup brings the manager to a running state.
 func Startup(config *MongoConfiguration) error {
-	log.Println("MongoDB : Startup : Started")
+	log.Infoln("MongoDB : Startup : Started")
 
 	// If the system has already been started ignore the call.
 	if mm.sessions != nil {
@@ -70,44 +71,44 @@ func Startup(config *MongoConfiguration) error {
 	}
 
 	// Log the mongodb connection straps.
-	log.Printf("MongoDB : Startup : Info : Hosts[%s]\n", config.Hosts)
-	log.Printf("MongoDB : Startup : Info : Database[%s]\n", config.Database)
-	log.Printf("MongoDB : Startup : Info : Username[%s]\n", config.UserName)
+	log.Infof("MongoDB : Startup : Info : Hosts[%s]", config.Hosts)
+	log.Infof("MongoDB : Startup : Info : Database[%s]", config.Database)
+	log.Infof("MongoDB : Startup : Info : Username[%s]", config.UserName)
 
 	hosts := strings.Split(config.Hosts, ",")
 
 	// Create the strong session.
 	if err := CreateSession("strong", MasterSession, hosts, config.Database, config.UserName, config.Password, config.Timeout); err != nil {
-		log.Println("MongoDB : Startup : ERROR :", err)
+		log.Infoln("MongoDB : Startup : ERROR :", err)
 		return err
 	}
 
 	// Create the monotonic session.
 	if err := CreateSession("monotonic", MonotonicSession, hosts, config.Database, config.UserName, config.Password, config.Timeout); err != nil {
-		log.Println("MongoDB : Startup : ERROR :", err)
+		log.Infoln("MongoDB : Startup : ERROR :", err)
 		return err
 	}
 
-	log.Println("MongoDB : Startup : Completed")
+	log.Infoln("MongoDB : Startup : Completed")
 	return nil
 }
 
 // Shutdown systematically brings the manager down gracefully.
 func Shutdown() error {
-	log.Println("MongoDB : Shutdown : Started")
+	log.Infoln("MongoDB : Shutdown : Started")
 
 	// Close the sessions.
 	for _, session := range mm.sessions {
 		CloseSession(session.mongoSession)
 	}
 
-	log.Println("MongoDB : Shutdown : Completed")
+	log.Infoln("MongoDB : Shutdown : Completed")
 	return nil
 }
 
 // CreateSession creates a connection pool for use.
 func CreateSession(mode string, sessionName string, hosts []string, databaseName string, username string, password string, timeout time.Duration) error {
-	log.Printf("MongoDB : CreateSession : Started : Mode[%s] SessionName[%s] Hosts[%s] DatabaseName[%s] Username[%s]\n", mode, sessionName, hosts, databaseName, username)
+	log.Infof("MongoDB : CreateSession : Started : Mode[%s] SessionName[%s] Hosts[%s] DatabaseName[%s] Username[%s]", mode, sessionName, hosts, databaseName, username)
 
 	// Create the database object
 	mongoSession := mongoSession{
@@ -124,7 +125,7 @@ func CreateSession(mode string, sessionName string, hosts []string, databaseName
 	var err error
 	mongoSession.mongoSession, err = mgo.DialWithInfo(mongoSession.mongoDBDialInfo)
 	if err != nil {
-		log.Println("MongoDB : CreateSession : ERROR:", err)
+		log.Infoln("MongoDB : CreateSession : ERROR:", err)
 		return err
 	}
 
@@ -153,7 +154,7 @@ func CreateSession(mode string, sessionName string, hosts []string, databaseName
 	// Add the database to the map.
 	mm.sessions[sessionName] = mongoSession
 
-	log.Println("MongoDB : CreateSession : Completed")
+	log.Infoln("MongoDB : CreateSession : Completed")
 	return nil
 }
 
@@ -169,21 +170,21 @@ func CopyMonotonicSession() (*mgo.Session, error) {
 
 // CopySession makes a copy of the specified session for client use.
 func CopySession(useSession string) (*mgo.Session, error) {
-	log.Printf("MongoDB : CopySession : Started : UseSession[%s]\n", useSession)
+	log.Infof("MongoDB : CopySession : Started : UseSession[%s]", useSession)
 
 	// Find the session object.
 	session := mm.sessions[useSession]
 
 	if session.mongoSession == nil {
 		err := fmt.Errorf("Unable To Locate Session %s", useSession)
-		log.Println("MongoDB : CopySession : ERROR :", err)
+		log.Infoln("MongoDB : CopySession : ERROR :", err)
 		return nil, err
 	}
 
 	// Copy the master session.
 	mongoSession := session.mongoSession.Copy()
 
-	log.Println("MongoDB : CopySession : Completed")
+	log.Infoln("MongoDB : CopySession : Completed")
 	return mongoSession, nil
 }
 
@@ -199,29 +200,29 @@ func CloneMonotonicSession() (*mgo.Session, error) {
 
 // CloneSession makes a clone of the specified session for client use.
 func CloneSession(useSession string) (*mgo.Session, error) {
-	log.Printf("MongoDB : CloneSession : Started : UseSession[%s]\n", useSession)
+	log.Infof("MongoDB : CloneSession : Started : UseSession[%s]", useSession)
 
 	// Find the session object.
 	session := mm.sessions[useSession]
 
 	if session.mongoSession == nil {
 		err := fmt.Errorf("Unable To Locate Session %s", useSession)
-		log.Println("MongoDB : CloneSession ERROR :", err)
+		log.Infoln("MongoDB : CloneSession ERROR :", err)
 		return nil, err
 	}
 
 	// Clone the master session.
 	mongoSession := session.mongoSession.Clone()
 
-	log.Println("MongoDB : CloneSession : Completed")
+	log.Infoln("MongoDB : CloneSession : Completed")
 	return mongoSession, nil
 }
 
 // CloseSession puts the connection back into the pool.
 func CloseSession(mongoSession *mgo.Session) {
-	log.Println("MongoDB : CloseSession : Started")
+	log.Infoln("MongoDB : CloseSession : Started")
 	mongoSession.Close()
-	log.Println("MongoDB : CloseSession : Completed")
+	log.Infoln("MongoDB : CloseSession : Completed")
 }
 
 // GetDatabase returns a reference to the specified database.
@@ -274,22 +275,22 @@ func ToStringD(queryMap bson.D) string {
 
 // Execute the MongoDB literal function.
 func Execute(mongoSession *mgo.Session, databaseName string, collectionName string, f func(*mgo.Collection) error) error {
-	log.Printf("MongoDB : Execute : Started : Database[%s] Collection[%s]\n", databaseName, collectionName)
+	log.Infof("MongoDB : Execute : Started : Database[%s] Collection[%s]", databaseName, collectionName)
 
 	// Capture the specified collection.
 	collection := GetCollection(mongoSession, databaseName, collectionName)
 	if collection == nil {
 		err := fmt.Errorf("Collection %s does not exist", collectionName)
-		log.Println("MongoDB : Execute : ERROR :", err)
+		log.Infoln("MongoDB : Execute : ERROR :", err)
 		return err
 	}
 
 	// Execute the MongoDB call.
 	if err := f(collection); err != nil {
-		log.Println("MongoDB : Execute : ERROR :", err)
+		log.Infoln("MongoDB : Execute : ERROR :", err)
 		return err
 	}
 
-	log.Println("MongoDB : Execute : Completed")
+	log.Infoln("MongoDB : Execute : Completed")
 	return nil
 }

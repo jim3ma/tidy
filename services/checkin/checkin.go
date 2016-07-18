@@ -2,13 +2,14 @@ package checkin
 
 import (
 	"io"
-	"log"
+	//"log"
 	"net/http"
 	"os"
 	"strconv"
 	"strings"
 	"time"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/gin-gonic/gin"
 	mod "github.com/jim3mar/tidy/models/checkin"
 	//muser "github.com/jim3mar/tidy/models/user"
@@ -56,10 +57,10 @@ func (cr *CheckInResource) EditCheckIn(c *gin.Context) {
 	img := c.PostForm("img")
 	uid := bson.ObjectIdHex(c.PostForm("uid"))
 
-	log.Print("Checkin user_id: " + uid.Hex())
+	log.Info("Checkin user_id: " + uid.Hex())
 
 	userinfo, err := cr.UserResource.QueryUserInfoByID(uid.Hex())
-	log.Printf("User info: %+v", userinfo)
+	log.Infof("User info: %+v", userinfo)
 	if err != nil {
 		panic(err)
 	}
@@ -71,7 +72,7 @@ func (cr *CheckInResource) EditCheckIn(c *gin.Context) {
 		},
 	).One(&ci)
 	if ci.UserID != uid {
-		log.Printf("user_id: %s, the owner of checkin isn't this user", uid)
+		log.Infof("user_id: %s, the owner of checkin isn't this user", uid)
 		c.JSON(http.StatusForbidden, "Error user for this checkin")
 		return
 	}
@@ -94,7 +95,7 @@ func (cr *CheckInResource) EditCheckIn(c *gin.Context) {
 		Deleted:     false,
 		Public:      false,
 	}
-	//log.Printf("Checkin content: %s", *ciData)
+	//log.Infof("Checkin content: %s", *ciData)
 	// insert updated checkin
 	err = cr.CollCI.Insert(ciData)
 	if err != nil {
@@ -126,17 +127,17 @@ func (cr *CheckInResource) CheckIn(c *gin.Context) {
 	content := c.PostForm("content")
 	uidString := c.PostForm("uid")
 	username := c.PostForm("user_name")
-	//log.Printf("Username: %s", username)
+	//log.Infof("Username: %s", username)
 	img := c.PostForm("img")
-	log.Print("Checkin user_id: " + uidString)
+	log.Info("Checkin user_id: " + uidString)
 	uid := bson.ObjectIdHex(uidString)
 	userinfo, err := cr.UserResource.QueryUserInfoByID(uidString)
-	log.Printf("User info: %+v", userinfo)
+	log.Infof("User info: %+v", userinfo)
 	if err != nil {
 		panic(err)
 	}
 	if !userinfo.CanCheckIn() {
-		log.Printf("user_id: %s, already checkin", uidString)
+		log.Infof("user_id: %s, already checkin", uidString)
 		c.JSON(http.StatusForbidden, "Already checkin today")
 		return
 	}
@@ -155,7 +156,7 @@ func (cr *CheckInResource) CheckIn(c *gin.Context) {
 		Timestamp:   now.Unix(),
 		Images:      strings.Split(img, "|"),
 	}
-	//log.Printf("Checkin content: %s", *ciData)
+	//log.Infof("Checkin content: %s", *ciData)
 	err = cr.CollCI.Insert(ciData)
 	if err != nil {
 		panic(err)
@@ -251,7 +252,7 @@ func (cr *CheckInResource) ListCheckIn(c *gin.Context) {
 	//col := cr.Mongo.DB("tidy").C("checkin")
 	//uid := bson.ObjectIdHex(c.DefaultQuery("uid", ""))
 	//objectId := bson.ObjectIdHex(id)
-	//log.Print("user_id: " + uid)
+	//log.Info("user_id: " + uid)
 	var ci []mod.CheckIn
 	//col.Find(bson.M{"user_id": uid}).All(&ci)
 	tp, err := strconv.Atoi(c.DefaultQuery("type", strconv.Itoa(ListPersonal)))
@@ -275,8 +276,8 @@ func (cr *CheckInResource) ListCheckIn(c *gin.Context) {
 	switch tp {
 	case ListPersonal:
 		uid := bson.ObjectIdHex(c.DefaultQuery("uid", ""))
-		log.Print(timestamp)
-		log.Print(count)
+		log.Info(timestamp)
+		log.Info(count)
 		queryM = bson.M{
 			"user_id": uid,
 			"timestamp": bson.M{
@@ -287,8 +288,8 @@ func (cr *CheckInResource) ListCheckIn(c *gin.Context) {
 	case ListPersonalWithCID:
 		uid := bson.ObjectIdHex(c.DefaultQuery("uid", ""))
 		cid := bson.ObjectIdHex(c.DefaultQuery("cid", ""))
-		log.Print(timestamp)
-		log.Print(count)
+		log.Info(timestamp)
+		log.Info(count)
 		queryM = bson.M{
 			"_id":     cid,
 			"user_id": uid,
@@ -328,7 +329,7 @@ func (cr *CheckInResource) ListCheckIn(c *gin.Context) {
 	}
 	cr.CollCI.Find(queryM).Limit(count).All(&ci)
 	//col.Find(nil).All(&ci)
-	//log.Printf("%s", ci)
+	//log.Infof("%s", ci)
 	c.JSON(http.StatusOK, ci)
 }
 
@@ -339,18 +340,17 @@ func (cr *CheckInResource) UploadImg(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, "")
 		return
 	}
-	//log.Println(header)
+	//log.Debug(header)
 	//filename split
 	fns := strings.Split(header.Filename, ".")
-	log.Println(fns)
+	log.Debugf("Header.Filename: %s", fns)
 	fileext := "png"
 	if l := len(fns); l >= 2 {
 		fileext = fns[l-1]
 	}
 	guid := bson.NewObjectId().Hex()
 	filename := guid + "." + fileext
-	log.Println(filename)
-	//fmt.Println(header.Filename)
+	log.Debug(filename)
 	out, err := os.Create("./tmp/" + filename)
 	if err != nil {
 		log.Fatal(err)

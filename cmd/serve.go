@@ -16,12 +16,13 @@ package cmd
 
 import (
 	"fmt"
-	"log"
+	//"log"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/jim3mar/basicmgo/mongo"
 	"github.com/jim3mar/tidy/services"
 	"github.com/jim3mar/tidy/utilities"
@@ -40,7 +41,7 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Tidy Serve Running...")
+		log.Info("Tidy Serve Running...")
 		Main()
 	},
 }
@@ -69,7 +70,7 @@ func updateConfig(config *services.Config) {
 	config.MongoAuthUser = viper.GetString("mongo.username")
 	config.MongoAuthPass = viper.GetString("mongo.password")
 	config.MongoAuthDB = viper.GetString("mongo.db")
-	fmt.Printf("current config: %+v\n", *config)
+	log.Infof("current config: %+v", *config)
 }
 
 func updateKeys() {
@@ -108,6 +109,6 @@ func Main() {
 
 	ch := make(chan os.Signal)
 	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
-	log.Printf("\nCatched Signal: %v\r\n", <-ch)
-	log.Printf("Graceful Shutdown.")
+	log.Infof("\nCatched Signal: %v\r\n", <-ch)
+	log.Infof("Graceful Shutdown.")
 }

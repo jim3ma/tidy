@@ -1,11 +1,12 @@
 package services
 
 import (
-	"log"
+	//"log"
 	"time"
 
 	"gopkg.in/mgo.v2"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/gin-gonic/gin"
 	"github.com/itsjamie/gin-cors"
 	"github.com/jim3mar/basicmgo/mongo"
@@ -37,11 +38,15 @@ type Service struct {
 	mgoSession *mgo.Session
 }
 
+func init() {
+
+}
+
 func (s *Service) getMgoSession(cfg Config) (*mgo.Session, error) {
 	//if bs, err := json.MarshalIndent(cfg, "", "    "); err != nil {
 	//	panic(err)
 	//} else {
-	//	log.Print("Current configuration:\n" + string(bs))
+	//	log.Info("Current configuration:" + string(bs))
 	//}
 
 	mgoSession, err := mongo.CopyMonotonicSession()

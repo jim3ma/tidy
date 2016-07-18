@@ -1,11 +1,17 @@
 {
 	"ImportPath": "github.com/jim3mar/tidy",
 	"GoVersion": "go1.6",
+	"GodepVersion": "v69",
 	"Deps": [
 		{
 			"ImportPath": "github.com/BurntSushi/toml",
 			"Comment": "v0.2.0-9-gf0aeabc",
 			"Rev": "f0aeabca5a127c4078abb8c8d64298b147264b55"
+		},
+		{
+			"ImportPath": "github.com/Sirupsen/logrus",
+			"Comment": "v0.10.0",
+			"Rev": "4b6ea7319e214d98c938f12692336f7ca9348d6b"
 		},
 		{
 			"ImportPath": "github.com/chanxuehong/wechat.v2/internal/debug/api",
@@ -94,11 +100,12 @@
 		},
 		{
 			"ImportPath": "github.com/itsjamie/gin-cors",
+			"Comment": "1.0.0",
 			"Rev": "97b4a9da79331dfa2b6d35f4cdd1e50f5148859c"
 		},
 		{
 			"ImportPath": "github.com/jim3mar/basicmgo/mongo",
-			"Rev": "85053161e1dbd622d679a3552adb500b0d1369f5"
+			"Rev": "45ded5778bc7e3a19355e868c232a7471a0ebed8"
 		},
 		{
 			"ImportPath": "github.com/jim3mar/endless",

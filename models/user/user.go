@@ -45,7 +45,7 @@ func (u *User) CheckInStatus() (can bool, cont int) {
 		cont = 1
 		return
 	}
-	//log.Printf("Last checkin status: %s, current time: %s", u.LastCheckIn, time.Now())
+	//log.Infof("Last checkin status: %s, current time: %s", u.LastCheckIn, time.Now())
 	ciData := new(ci.CheckIn)
 	if checkin, ok := u.LastCheckIn.(bson.M); ok {
 		if bson2Struct(&checkin, ciData) {

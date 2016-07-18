@@ -2,12 +2,13 @@ package system
 
 import (
 	//"errors"
-	"log"
+	//"log"
 	"net/http"
 	//"strconv"
 	//"strings"
 	"time"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/gin-gonic/gin"
 	ms "github.com/jim3mar/tidy/models/system"
 	//util "github.com/jim3mar/tidy/utilities"
@@ -20,8 +21,8 @@ func (sr *SystemResource) CreateFeedback(c *gin.Context) {
 	now := time.Now()
 	content := c.PostForm("content")
 	username := c.PostForm("user_name")
-	log.Printf("username: %s", username)
-	log.Printf("content: %s", content)
+	log.Infof("username: %s", username)
+	log.Infof("content: %s", content)
 	if content == "" {
 		c.JSON(http.StatusBadRequest, "Empty content")
 		return

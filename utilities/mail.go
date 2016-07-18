@@ -3,11 +3,12 @@ package utilities
 import (
 	"crypto/tls"
 	"fmt"
-	"log"
+	//"log"
 	"net"
 	"net/mail"
 	"net/smtp"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
@@ -32,7 +33,7 @@ func InitMailConfig() {
 		viper.GetString("mail.host"), viper.GetString("mail.port"))
 	config.SendFrom = viper.GetString("mail.sendfrom")
 	config.TLSSkipVerify = viper.GetBool("mail.tlsskipverify")
-	log.Printf("current mail config: %+v", config)
+	log.Infof("current mail config: %+v", config)
 }
 
 //SendSysMail use global variable config for default smtp settings.

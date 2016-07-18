@@ -3,12 +3,13 @@ package user
 import (
 	"errors"
 	"fmt"
-	"log"
+	//"log"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/gin-gonic/gin"
 	mod "github.com/jim3mar/tidy/models/user"
 	util "github.com/jim3mar/tidy/utilities"
@@ -59,9 +60,9 @@ func (ur *UserResource) RegisterUser(c *gin.Context) {
 	if username == "" || password == "" || email == "" {
 		c.JSON(http.StatusBadRequest, "Invalid parameter")
 	}
-	log.Print("New username:" + username)
-	log.Print("New password:" + password)
-	log.Print("New email:" + email)
+	log.Info("New username:" + username)
+	log.Info("New password:" + password)
+	log.Info("New email:" + email)
 
 	if ur.IsAccountExist(username, email) {
 		c.JSON(http.StatusBadRequest, "username or email account existed!")
@@ -263,7 +264,7 @@ func (ur *UserResource) queryUserHelp(query bson.M, pdata interface{}) error {
 func (ur *UserResource) UpdatePortrait(c *gin.Context) {
 	uidString := c.PostForm("uid")
 	uid := bson.ObjectIdHex(uidString)
-	log.Printf("uid: %s", uidString)
+	log.Infof("uid: %s", uidString)
 
 	portrait := c.PostForm("portrait")
 
@@ -289,7 +290,7 @@ func (ur *UserResource) UpdateSetting(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, "")
 		return
 	}
-	log.Printf("login type: %d", tp)
+	log.Infof("login type: %d", tp)
 	switch tp {
 	case LTTidy:
 		ur.updateSettingTidy(c)
@@ -306,7 +307,7 @@ func (ur *UserResource) UpdateSetting(c *gin.Context) {
 func (ur *UserResource) updateSetting(c *gin.Context) {
 	uidString := c.PostForm("uid")
 	uid := bson.ObjectIdHex(uidString)
-	log.Printf("uid: %s", uidString)
+	log.Infof("uid: %s", uidString)
 
 	newUsername := c.PostForm("new_username")
 	newPassword := c.PostForm("new_password")
@@ -316,15 +317,15 @@ func (ur *UserResource) updateSetting(c *gin.Context) {
 
 	recvSysMsg := c.PostForm("recv_sysmsg")
 
-	log.Printf("new username: %s", newUsername)
-	log.Printf("new password: %s", newPassword)
+	log.Infof("new username: %s", newUsername)
+	log.Infof("new password: %s", newPassword)
 
-	log.Printf("new upload method: %s", uploadMethod)
-	log.Printf("gender: %s", gender)
+	log.Infof("new upload method: %s", uploadMethod)
+	log.Infof("gender: %s", gender)
 
 	// TBD
 	// need add message collection and features
-	log.Printf("rece system message: %s", recvSysMsg)
+	log.Infof("rece system message: %s", recvSysMsg)
 
 	igender, ierr := strconv.Atoi(gender)
 	if ierr != nil {
@@ -363,7 +364,7 @@ func (ur *UserResource) updateSettingTidy(c *gin.Context) {
 	uid := bson.ObjectIdHex(uidString)
 
 	passwd := util.Md5Sum(oldPassword)
-	log.Printf("passwd: %s", passwd)
+	log.Infof("passwd: %s", passwd)
 
 	err := ur.CollUser.Find(
 		bson.M{

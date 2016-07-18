@@ -4,11 +4,12 @@ import (
 	"crypto/rsa"
 	"fmt"
 	"io/ioutil"
-	"log"
+	//"log"
 	"net/http"
 	"net/url"
 	"time"
 
+	log "github.com/Sirupsen/logrus"
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 )
@@ -83,12 +84,12 @@ func JWTHandler() gin.HandlerFunc {
 		}
 
 		// for TESTING
-		//log.Print(c)
-		//log.Print(c.Keys)
-		//log.Print(c.Params)
-		//log.Print(c.Request)
-		//log.Print(c.Request.Form)
-		//log.Print(c.Request.PostForm)
+		//log.Info(c)
+		//log.Info(c.Keys)
+		//log.Info(c.Params)
+		//log.Info(c.Request)
+		//log.Info(c.Request.Form)
+		//log.Info(c.Request.PostForm)
 		//tokenString, _ = NewToken(map[string]string{"uid": "tidy uid tidy-uid"})
 		// for TESTING
 
@@ -120,12 +121,12 @@ func appendGetParameter(c *gin.Context, token *jwt.Token) {
 			continue
 		}
 	}
-	log.Printf("Auth parameter: %s", c.Request.URL.RawQuery)
+	log.Infof("Auth parameter: %s", c.Request.URL.RawQuery)
 }
 
 func appendPostParameter(c *gin.Context, token *jwt.Token) {
 	if c.Request.PostForm == nil {
-		log.Print("nil postform data")
+		log.Info("nil postform data")
 		c.Request.PostForm = url.Values{}
 	}
 	//c.Request.PostForm.Set("uid", token.Claims["uid"].(string))
@@ -144,11 +145,11 @@ func appendPostParameter(c *gin.Context, token *jwt.Token) {
 func appendParameter(c *gin.Context, token *jwt.Token) {
 	switch c.Request.Method {
 	case "GET":
-		//log.Print(c.Request.Form)
-		//log.Print(c.Request)
+		//log.Info(c.Request.Form)
+		//log.Info(c.Request)
 
 		//if c.Request.Form == nil {
-		//	log.Print("nil form data")
+		//	log.Info("nil form data")
 		//	c.Request.Form = url.Values{}
 		//}
 
@@ -161,13 +162,13 @@ func appendParameter(c *gin.Context, token *jwt.Token) {
 		//		"&" + "user_name" + "=" + url.QueryEscape(token.Claims["user_name"].(string))
 		appendGetParameter(c, token)
 		//uid := c.DefaultQuery("uid", "none")
-		//log.Print(uid)
+		//log.Info(uid)
 	case "POST":
-		//log.Print(c.Request.PostForm)
-		//log.Print(c.Request)
+		//log.Info(c.Request.PostForm)
+		//log.Info(c.Request)
 		appendPostParameter(c, token)
 		//uid := c.DefaultPostForm("uid", "none")
-		//log.Print(uid)
+		//log.Info(uid)
 	case "PUT":
 		appendPostParameter(c, token)
 	case "DELETE":
@@ -181,7 +182,7 @@ func appendParameter(c *gin.Context, token *jwt.Token) {
 func NewToken(values map[string]string) (tokenString string, err error) {
 	// create a signer for rsa 256
 	token := jwt.New(jwt.GetSigningMethod("RS256"))
-	log.Printf("NewToken values: %s", values)
+	log.Infof("NewToken values: %s", values)
 	for key, val := range values {
 		// set our claims
 		token.Claims[key] = val
@@ -191,7 +192,7 @@ func NewToken(values map[string]string) (tokenString string, err error) {
 	// see http://tools.ietf.org/html/draft-ietf-oauth-json-web-token-20#section-4.1.4
 	token.Claims["exp"] = time.Now().Add(time.Minute * 120).Unix()
 	tokenString, err = token.SignedString(signKey)
-	log.Printf("New token: %s", tokenString)
+	log.Infof("New token: %s", tokenString)
 	return
 }
 
@@ -208,23 +209,23 @@ func VerifyToken(tokenString string) (bool, *jwt.Token) {
 	switch err.(type) {
 	case nil: // no error
 		if !token.Valid { // but may still be invalid
-			log.Print("Invalid Token")
+			log.Info("Invalid Token")
 			return false, nil
 		}
-		//log.Printf("Verified! Token:%+v\n", token)
+		//log.Infof("Verified! Token:%+v\n", token)
 		return true, token
 	case *jwt.ValidationError: // something was wrong during the validation
 		vErr := err.(*jwt.ValidationError)
 		switch vErr.Errors {
 		case jwt.ValidationErrorExpired:
-			log.Print("Token expired")
+			log.Info("Token expired")
 			return false, nil
 		default:
-			log.Printf("ValidationError error: %+v\n", vErr.Errors)
+			log.Infof("ValidationError error: %+v\n", vErr.Errors)
 			return false, nil
 		}
 	default: // something else went wrong
-		log.Printf("Token parse error: %v\n", err)
+		log.Infof("Token parse error: %v\n", err)
 		return false, nil
 	}
 }

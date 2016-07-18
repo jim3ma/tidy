@@ -4,6 +4,7 @@ import (
 	"github.com/spf13/viper"
 	"gopkg.in/mgo.v2"
 	//"gopkg.in/mgo.v2/bson"
+	//log "github.com/Sirupsen/logrus"
 )
 
 type SystemResource struct {
