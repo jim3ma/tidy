@@ -61,7 +61,7 @@ func (ur *UserResource) RegisterUser(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, "Invalid parameter")
 	}
 	log.Info("New username:" + username)
-	log.Info("New password:" + password)
+	//log.Info("New password:" + password)
 	log.Info("New email:" + email)
 
 	if ur.IsAccountExist(username, email) {
@@ -89,7 +89,10 @@ func (ur *UserResource) RegisterUser(c *gin.Context) {
 		NewReg: true,
 	})
 	if email != "" {
-		util.SendSysMail(email, fmt.Sprintf("Hello %s", username), "Welcome to Tidy")
+		err := util.SendSysMail(email, fmt.Sprintf("Hello %s", username), "Welcome to Tidy")
+		if err != nil {
+			log.Errorf("Failed send email due to error: %s", err)
+		}
 	}
 }
 

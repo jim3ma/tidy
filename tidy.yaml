@@ -13,9 +13,9 @@ mongo:
   db: tidy
 
 mail:
-  host: mail.ctidy.com
-  port: 587
+  host: smtp.exmail.qq.com
+  port: 465
   # authaddr:
   # authpasswd:
   # sendfrom: 
-  tlsskipverify: true
+  tlsskipverify: false
