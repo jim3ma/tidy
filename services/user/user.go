@@ -298,16 +298,16 @@ func (ur *UserResource) UpdateSetting(c *gin.Context) {
 	case LTTidy:
 		ur.updateSettingTidy(c)
 	case LTWeChat:
-		ur.updateSetting(c)
+		ur.updateSetting(c, true)
 		//updateSettingWeChat(c)
 	case LTUnknow:
-		c.JSON(http.StatusUnauthorized, "")
+		c.JSON(http.StatusUnauthorized, "Error login_type")
 	default:
 		c.JSON(http.StatusUnauthorized, "")
 	}
 }
 
-func (ur *UserResource) updateSetting(c *gin.Context) {
+func (ur *UserResource) updateSetting(c *gin.Context, updatePasswd bool) {
 	uidString := c.PostForm("uid")
 	uid := bson.ObjectIdHex(uidString)
 	log.Infof("uid: %s", uidString)
@@ -328,7 +328,7 @@ func (ur *UserResource) updateSetting(c *gin.Context) {
 
 	// TBD
 	// need add message collection and features
-	log.Infof("rece system message: %s", recvSysMsg)
+	log.Infof("receive system message: %s", recvSysMsg)
 
 	igender, ierr := strconv.Atoi(gender)
 	if ierr != nil {
@@ -341,17 +341,32 @@ func (ur *UserResource) updateSetting(c *gin.Context) {
 
 	// TBD
 	// check new username
-	err := ur.CollUser.Update(
-		bson.M{
-			"_id": uid,
-		},
-		bson.M{
-			"$set": bson.M{
-				"user_name": newUsername,
-				"password":  util.Md5Sum(newPassword),
-				"setting":   setting,
+	var err error
+	if updatePasswd {
+		err = ur.CollUser.Update(
+			bson.M{
+				"_id": uid,
 			},
-		})
+			bson.M{
+				"$set": bson.M{
+					"user_name": newUsername,
+					"password":  util.Md5Sum(newPassword),
+					"setting":   setting,
+				},
+			})
+	} else {
+		err = ur.CollUser.Update(
+			bson.M{
+				"_id": uid,
+			},
+			bson.M{
+				"$set": bson.M{
+					"user_name": newUsername,
+					//"password":  util.Md5Sum(newPassword),
+					"setting": setting,
+				},
+			})
+	}
 
 	if err != nil {
 		panic(err)
@@ -369,14 +384,24 @@ func (ur *UserResource) updateSettingTidy(c *gin.Context) {
 	passwd := util.Md5Sum(oldPassword)
 	log.Infof("passwd: %s", passwd)
 
+	if oldPassword == "" {
+		ur.updateSetting(c, false)
+		//c.JSON(http.StatusOK, "")
+		return
+	}
+
 	err := ur.CollUser.Find(
 		bson.M{
 			"_id":      uid,
 			"password": passwd,
 		}).One(&userInfo)
+
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, "")
 		return
 	}
-	ur.updateSetting(c)
+	ur.updateSetting(c, true)
+	c.JSON(http.StatusOK, "")
+
+	return
 }
