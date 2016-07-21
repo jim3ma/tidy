@@ -12,13 +12,13 @@ default: all
 
 all: build
 
-deps: 
-	mkdir -p $(BUILD_DIR)/bin; \
-	go get -tags '$(BUILDTAGS)' -d -v ./...;
+deps:
+	mkdir -p $(BUILD_DIR)/bin; #\
+	#go get -tags '$(BUILDTAGS)' -d -v ./...;
 
 build: deps; \
-        CGO_ENABLED=0 go install -tags '$(BUILDTAGS)' . ; \
-        cp $${GOPATH}/bin/tidy $(BUILD_DIR)/bin; \
+    CGO_ENABLED=0 go install -tags '$(BUILDTAGS)' . ; \
+    cp $${GOPATH}/bin/tidy $(BUILD_DIR)/bin; \
 	cp -vfr keys $(BUILD_DIR)/bin/; \
 	cp -vfr tidy.yaml $(BUILD_DIR)/bin/;
 
@@ -33,7 +33,8 @@ release: BUILDTAGS=release
 release: build
 
 release-docker: BUILDTAGS=release
-release-docker: build
+#release-docker: build
+release-docker: build-docker
 
 update:
 	git pull
@@ -43,4 +44,3 @@ clean:
 	rm -f $${GOPATH}/bin/tidy
 	go clean -i -r ./...
 	git checkout -- .
-

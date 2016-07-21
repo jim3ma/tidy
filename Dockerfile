@@ -8,6 +8,8 @@ ENV BUILD_DIR /go/src/github.com/jim3mar/tidy
 ENV BUILDTAGS debug
 ENV GOPATH /go
 
+RUN apk --no-cache add openssl
+
 ADD . ${BUILD_DIR}
 
 RUN cd ${BUILD_DIR} && \
@@ -15,8 +17,7 @@ RUN cd ${BUILD_DIR} && \
       mkdir -p ${TIDY_DIR}/tmp && \
       cp ${GOPATH}/bin/tidy ${TIDY_DIR}/ && \
       cp -vfr keys ${TIDY_DIR}/ && \
-  	  cp -vfr tidy.yaml ${TIDY_DIR}/ && \
-      apk --no-cache add openssl && \
+      cp -vfr tidy.yaml ${TIDY_DIR}/ && \
       (cd ${TIDY_DIR}/keys/; sh ${TIDY_DIR}/keys/key-gen.sh) && \
       rm -rf GOPATH
 
@@ -24,4 +25,4 @@ WORKDIR /usr/local/tidy/
 
 EXPOSE 8089
 
-CMD ["/usr/local/tidy/tidy"]
+CMD ["/usr/local/tidy/tidy", "serve"]
