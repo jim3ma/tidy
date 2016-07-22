@@ -2,6 +2,7 @@ package services
 
 import (
 	//"log"
+
 	"time"
 
 	"gopkg.in/mgo.v2"
@@ -39,7 +40,14 @@ type Service struct {
 }
 
 func init() {
+	// Log as JSON instead of the default ASCII formatter.
+	//log.SetFormatter(&log.JSONFormatter{})
 
+	// Output to stderr instead of stdout, could also be a file.
+	//log.SetOutput(os.Stderr)
+
+	// Only log the warning severity or above.
+	log.SetLevel(log.DebugLevel)
 }
 
 func (s *Service) getMgoSession(cfg Config) (*mgo.Session, error) {
@@ -93,6 +101,7 @@ func (s *Service) Run(cfg Config) error {
 	}))
 	router.Use(jsonp.Handler())
 	router.Use(gin.Recovery())
+	router.Use(util.DebugHandler())
 
 	v1 := router.Group("/v1")
 	{
