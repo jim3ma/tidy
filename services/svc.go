@@ -48,6 +48,7 @@ func init() {
 
 	// Only log the warning severity or above.
 	log.SetLevel(log.DebugLevel)
+	//log.SetLevel(log.InfoLevel)
 }
 
 func (s *Service) getMgoSession(cfg Config) (*mgo.Session, error) {
@@ -105,6 +106,7 @@ func (s *Service) Run(cfg Config) error {
 
 	v1 := router.Group("/v1")
 	{
+		/////////////////////////////////////////
 		// checkin api
 		// need token
 		ci := v1.Group("/checkin")
@@ -115,15 +117,26 @@ func (s *Service) Run(cfg Config) error {
 		ci.GET("", svcCR.ListCheckIn)
 		ci.DELETE("", svcCR.DeleteCheckIn)
 
-		ci.PUT("/public", svcCR.MakeCIPublic)
-		ci.PUT("/private", svcCR.MakeCIPrivate)
+		ci.PUT("/public", svcCR.MarkCIPublic)
+		ci.PUT("/private", svcCR.MarkCIPrivate)
+
+		ci.POST("/favor", svcCR.FavorCheckIn)
+		ci.DELETE("/favor", svcCR.UnFavorCheckIn)
+
+		ci.POST("/thumb", svcCR.ThumbCheckIn)
+		ci.DELETE("/thumb", svcCR.UnThumbCheckIn)
+
+		ci.POST("/comment", svcCR.CommentCheckIn)
+		ci.DELETE("/comment", svcCR.UnCommentCheckIn)
 		//ci.POST("/uploadimg", svcCR.UploadImg)
 
+		/////////////////////////////////////////
 		o := v1.Group("/oauth2")
 		o.GET("/wechat", svcWR.ExchangeToken)
 		o.POST("/wechat", svcWR.ExchangeToken)
 		o.GET("/wechat_url", svcWR.CreateAuthURL)
 
+		/////////////////////////////////////////
 		// user api: register and login
 		user := v1.Group("/user")
 		user.POST("/uploadimg", svcCR.UploadImg)
@@ -131,8 +144,10 @@ func (s *Service) Run(cfg Config) error {
 		user.GET("/query", svcUR.RegisterQuery)
 		user.GET("/login", svcUR.AuthWithPassword)
 
+		/////////////////////////////////////////
 		user.POST("/feedback", svcSR.CreateFeedback)
 
+		/////////////////////////////////////////
 		// user infomation
 		// need token
 		userInfo := user.Group("/info")
@@ -144,6 +159,7 @@ func (s *Service) Run(cfg Config) error {
 		updateSetting.POST("", svcUR.UpdateSetting)
 		updateSetting.POST("/portrait", svcUR.UpdatePortrait)
 
+		/////////////////////////////////////////
 		// static files
 		v1.Static("/static/images", "./tmp")
 		//v1.Static("/static", ".")

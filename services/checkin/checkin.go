@@ -23,6 +23,10 @@ type CheckInResource struct {
 	Mongo        *mgo.Session
 	CollCI       *mgo.Collection
 	CollUser     *mgo.Collection
+	CollThumb    *mgo.Collection
+	CollFavor    *mgo.Collection
+	CollComments *mgo.Collection
+	CollSComment *mgo.Collection
 	UserResource *svcuser.UserResource
 }
 
@@ -31,6 +35,10 @@ func (cr *CheckInResource) Init(session *mgo.Session) {
 	cr.Mongo = session
 	cr.CollCI = cr.Mongo.DB(db).C("checkin")
 	cr.CollUser = cr.Mongo.DB(db).C("user")
+	cr.CollThumb = cr.Mongo.DB(db).C("ci_thumb")
+	cr.CollFavor = cr.Mongo.DB(db).C("ci_favor")
+	cr.CollComments = cr.Mongo.DB(db).C("ci_comments")
+	cr.CollSComment = cr.Mongo.DB(db).C("ci_comment")
 }
 
 func (cr *CheckInResource) canEditCheckIn(uid bson.ObjectId, cid bson.ObjectId) bool {
@@ -120,6 +128,270 @@ func (cr *CheckInResource) EditCheckIn(c *gin.Context) {
 	c.JSON(http.StatusOK, now.Unix())
 }
 
+// CommentCheckIn add a new comment for special checkin
+// Method: POST
+func (cr *CheckInResource) CommentCheckIn(c *gin.Context) {
+	uid := bson.ObjectIdHex(c.PostForm("uid"))
+	cid := bson.ObjectIdHex(c.PostForm("cid"))
+	content := c.PostForm("content")
+	username := c.PostForm("user_name")
+
+	now := time.Now()
+	commendID := bson.NewObjectId()
+	comment := &mod.SingleComment{
+		ID:          commendID,
+		UserID:      uid,
+		UserName:    username,
+		Content:     content,
+		CreateAt:    now,
+		CreateDay:   now.Day(),
+		CreateMonth: int(now.Month()),
+		CreateYear:  now.Year(),
+		CreateHour:  now.Hour(),
+		CreateMin:   now.Minute(),
+		CreateSec:   now.Second(),
+		Timestamp:   now.Unix(),
+	}
+
+	err := cr.CollSComment.Insert(comment)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
+		log.Debugf("upsert checkin comment error: %s", err)
+		return
+	}
+
+	change, err := cr.updateComments(cid, uid, MgoCollAddSet, comment.ID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
+		log.Debugf("update checkin comments error: %s", err)
+		return
+	}
+	log.Infof("Update comments, cid: %s, uid: %s, change info: %s", cid, uid, change)
+	c.JSON(http.StatusOK, gin.H{"error": "none"})
+}
+
+// UnCommentCheckIn mark a new comment for special checkin
+// Method: DELETE
+func (cr *CheckInResource) UnCommentCheckIn(c *gin.Context) {
+	uid := bson.ObjectIdHex(c.Query("uid"))
+	cid := bson.ObjectIdHex(c.Query("cid"))
+	commentID := bson.ObjectIdHex(c.Query("comment_id"))
+
+	// check whether can delete the comment
+	count, err := cr.CollSComment.Find(
+		bson.M{
+			"_id": cid,
+			"uid": uid,
+		}).Count()
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
+		return
+	}
+
+	if count == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err})
+		return
+	}
+
+	change, err := cr.updateComments(cid, uid, MgoCollPull, commentID)
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
+		log.Debugf("update checkin comments error: %s", err)
+		return
+	}
+	log.Infof("Update comments, cid: %s, uid: %s, comment id: %s, change info: %s", cid, uid, commentID, change)
+	c.JSON(http.StatusOK, gin.H{"error": "none"})
+}
+
+func (cr *CheckInResource) updateComments(cid bson.ObjectId, uid bson.ObjectId, action string, commentID bson.ObjectId) (*mgo.ChangeInfo, error) {
+	change, err := cr.CollComments.Upsert(
+		bson.M{
+			"_id": cid,
+		},
+		bson.M{
+			action: bson.M{
+				"comment_ids": commentID,
+			},
+		})
+	return change, err
+}
+
+// ThumbCheckIn update checkin and thumb collection
+// Method: POST
+func (cr *CheckInResource) ThumbCheckIn(c *gin.Context) {
+	uid := bson.ObjectIdHex(c.PostForm("uid"))
+	cid := bson.ObjectIdHex(c.PostForm("cid"))
+
+	///
+	/// TBD check if user had already thumb the ci
+	///
+	err := cr.updateCIThumb(cid, 1)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
+		log.Debugf("update checkin error: %s", err)
+		return
+	}
+
+	change, err := cr.updateThumb(cid, uid, MgoCollAddSet)
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
+		log.Debugf("update ci_thumb error: %s", err)
+		return
+	}
+
+	log.Infof("Update thumb, cid: %s, uid: %s, change info: %s", cid, uid, change)
+	c.JSON(http.StatusOK, gin.H{"error": "none"})
+}
+
+// UnThumbCheckIn update checkin and thumb collection
+// Method: DELETE
+func (cr *CheckInResource) UnThumbCheckIn(c *gin.Context) {
+	uid := bson.ObjectIdHex(c.Query("uid"))
+	cid := bson.ObjectIdHex(c.Query("cid"))
+
+	///
+	/// TBD check if user had already thumb the ci
+	///
+	err := cr.updateCIThumb(cid, -1)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
+		log.Debugf("update checkin error: %s", err)
+		return
+	}
+
+	change, err := cr.updateThumb(cid, uid, MgoCollPull)
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
+		log.Debugf("update ci_thumb error: %s", err)
+		return
+	}
+
+	log.Infof("Update thumb, cid: %s, uid: %s, change info: %s", cid, uid, change)
+	c.JSON(http.StatusOK, gin.H{"error": "none"})
+}
+
+func (cr *CheckInResource) updateCIFavor(cid bson.ObjectId, val int) error {
+	err := cr.CollCI.Update(
+		bson.M{
+			"_id": cid,
+		},
+		bson.M{
+			"$inc": bson.M{
+				"favor_count": val,
+			},
+		})
+	return err
+}
+
+func (cr *CheckInResource) updateCIThumb(cid bson.ObjectId, val int) error {
+	err := cr.CollCI.Update(
+		bson.M{
+			"_id": cid,
+		},
+		bson.M{
+			"$inc": bson.M{
+				"thumb_count": val,
+			},
+		})
+	return err
+}
+
+// Mongo collection update type
+const (
+	MgoCollAddSet = "$addToSet"
+	MgoCollInc    = "$inc"
+	MgoCollPop    = "$pop"
+	MgoCollPush   = "$push"
+	MgoCollPull   = "$pull"
+	MgoCollSet    = "$set"
+)
+
+func (cr *CheckInResource) updateFavor(cid bson.ObjectId, uid bson.ObjectId, action string) (*mgo.ChangeInfo, error) {
+	change, err := cr.CollFavor.Upsert(
+		bson.M{
+			"_id": uid,
+		},
+		bson.M{
+			action: bson.M{
+				"cids": cid,
+			},
+		})
+	return change, err
+}
+
+func (cr *CheckInResource) updateThumb(cid bson.ObjectId, uid bson.ObjectId, action string) (*mgo.ChangeInfo, error) {
+	change, err := cr.CollThumb.Upsert(
+		bson.M{
+			"_id": uid,
+		},
+		bson.M{
+			action: bson.M{
+				"cids": cid,
+			},
+		})
+	return change, err
+}
+
+// FavorCheckIn update checkin and ci_favor collection
+// Method: POST
+func (cr *CheckInResource) FavorCheckIn(c *gin.Context) {
+	uid := bson.ObjectIdHex(c.PostForm("uid"))
+	cid := bson.ObjectIdHex(c.PostForm("cid"))
+
+	///
+	/// TBD check if user had already favor the ci
+	///
+	err := cr.updateCIFavor(cid, 1)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
+		log.Debugf("update checkin error: %s", err)
+		return
+	}
+
+	change, err := cr.updateFavor(cid, uid, MgoCollAddSet)
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
+		log.Debugf("update ci_favor error: %s", err)
+		return
+	}
+
+	log.Infof("Update favor, cid: %s, uid: %s, change info: %s", cid, uid, change)
+	c.JSON(http.StatusOK, gin.H{"error": "none"})
+}
+
+// UnFavorCheckIn update checkin and ci_favor collection
+// Method: DELETE
+func (cr *CheckInResource) UnFavorCheckIn(c *gin.Context) {
+	uid := bson.ObjectIdHex(c.Query("uid"))
+	cid := bson.ObjectIdHex(c.Query("cid"))
+
+	///
+	/// TBD check if user had already favor the ci
+	///
+	err := cr.updateCIFavor(cid, -1)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
+		log.Debugf("update checkin error: %s", err)
+		return
+	}
+
+	change, err := cr.updateFavor(cid, uid, MgoCollPull)
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
+		log.Debugf("update ci_favor error: %s", err)
+		return
+	}
+
+	log.Infof("Update favor, cid: %s, uid: %s, change info: %s", cid, uid, change)
+	c.JSON(http.StatusOK, gin.H{"error": "none"})
+}
+
 // CheckIn do checkin task for special user id
 // Method: POST
 func (cr *CheckInResource) CheckIn(c *gin.Context) {
@@ -129,6 +401,11 @@ func (cr *CheckInResource) CheckIn(c *gin.Context) {
 	username := c.PostForm("user_name")
 	//log.Infof("Username: %s", username)
 	img := c.PostForm("img")
+	pub := c.PostForm("public")
+	public := true
+	if pub == "false" {
+		public = false
+	}
 	log.Info("Checkin user_id: " + uidString)
 	uid := bson.ObjectIdHex(uidString)
 	userinfo, err := cr.UserResource.QueryUserInfoByID(uidString)
@@ -155,6 +432,9 @@ func (cr *CheckInResource) CheckIn(c *gin.Context) {
 		CreateSec:   now.Second(),
 		Timestamp:   now.Unix(),
 		Images:      strings.Split(img, "|"),
+		Public:      public,
+		//FavorCount:  0,
+		//ThumbCount:  0,
 	}
 	//log.Infof("Checkin content: %s", *ciData)
 	err = cr.CollCI.Insert(ciData)
@@ -213,13 +493,13 @@ func (cr *CheckInResource) changePublic(c *gin.Context, pub bool) {
 
 // MakeCIPublic change the checkin to public
 // Method: PUT
-func (cr *CheckInResource) MakeCIPublic(c *gin.Context) {
+func (cr *CheckInResource) MarkCIPublic(c *gin.Context) {
 	cr.changePublic(c, true)
 }
 
 // MakeCIPrivate change the checkin to private
 // Method: PUT
-func (cr *CheckInResource) MakeCIPrivate(c *gin.Context) {
+func (cr *CheckInResource) MarkCIPrivate(c *gin.Context) {
 	cr.changePublic(c, false)
 }
 
@@ -276,8 +556,8 @@ func (cr *CheckInResource) ListCheckIn(c *gin.Context) {
 	switch tp {
 	case ListPersonal:
 		uid := bson.ObjectIdHex(c.DefaultQuery("uid", ""))
-		log.Info(timestamp)
-		log.Info(count)
+		//log.Info(timestamp)
+		//log.Info(count)
 		queryM = bson.M{
 			"user_id": uid,
 			"timestamp": bson.M{
@@ -288,8 +568,8 @@ func (cr *CheckInResource) ListCheckIn(c *gin.Context) {
 	case ListPersonalWithCID:
 		uid := bson.ObjectIdHex(c.DefaultQuery("uid", ""))
 		cid := bson.ObjectIdHex(c.DefaultQuery("cid", ""))
-		log.Info(timestamp)
-		log.Info(count)
+		//log.Info(timestamp)
+		//log.Info(count)
 		queryM = bson.M{
 			"_id":     cid,
 			"user_id": uid,
@@ -330,7 +610,52 @@ func (cr *CheckInResource) ListCheckIn(c *gin.Context) {
 	cr.CollCI.Find(queryM).Limit(count).All(&ci)
 	//col.Find(nil).All(&ci)
 	//log.Infof("%s", ci)
+
+	// update personal thumbed and favored infomation
+	if tp != ListPersonal {
+		uid := bson.ObjectIdHex(c.DefaultQuery("uid", ""))
+		cr.updateQueriedCIs(uid, ci)
+	}
 	c.JSON(http.StatusOK, ci)
+}
+
+func (cr *CheckInResource) updateQueriedCIs(uid bson.ObjectId, ci []mod.CheckIn) {
+	///////////////////////////////////////
+	/// TBD
+	///////////////////////////////////////
+	var thumb mod.Thumb
+	var favor mod.Favorite
+	cr.CollThumb.Find(
+		bson.M{
+			"_id": uid,
+		},
+	).One(&thumb)
+	cr.CollFavor.Find(
+		bson.M{
+			"_id": uid,
+		},
+	).One(&favor)
+
+	//log.Debugf("before updating: %+v", ci)
+	for i := range ci {
+		///////////////////////////////////////
+		/// TBD
+		///////////////////////////////////////
+		for _, tID := range thumb.CheckinIDs {
+			if ci[i].ID == tID {
+				ci[i].Thumbed = true
+			}
+			//ci[i].Thumbed = true
+		}
+		for _, fID := range favor.CheckinIDs {
+			if ci[i].ID == fID {
+				ci[i].Favored = true
+			}
+			//ci[i].Favored = true
+		}
+	}
+	//log.Debugf("after updating: %+v", ci)
+
 }
 
 func (cr *CheckInResource) UploadImg(c *gin.Context) {

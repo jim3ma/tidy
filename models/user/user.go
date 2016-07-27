@@ -4,6 +4,7 @@ import (
 	"time"
 
 	ci "github.com/jim3mar/tidy/models/checkin"
+	"github.com/spf13/viper"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -21,6 +22,9 @@ type User struct {
 }
 
 func (u *User) CanCheckIn() bool {
+	if viper.GetBool("debug") {
+		return true
+	}
 	if u.LastCheckIn == nil {
 		return true
 	}

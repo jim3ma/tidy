@@ -11,15 +11,17 @@ import (
 // Comment data
 // the ID is the same as CheckinID
 type Comment struct {
-	ID       bson.ObjectId   `bson:"_id" json:"id"`
-	Comments []SingleComment `bson:"comments" json:"comments"`
+	ID         bson.ObjectId   `bson:"_id" json:"id"`
+	CommentIDs []bson.ObjectId `bson:"comment_ids" json:"comment_ids"`
 	//CheckinID bson.ObjectId   `bson:"checkin_id" json:"checkin_id"`
 }
 
 // SingleComment for Comment data
 type SingleComment struct {
+	ID          bson.ObjectId `bson:"_id" json:"id"`
 	UserID      bson.ObjectId `bson:"uid" json:"uid"`
-	Comment     string        `bson:"comment" json:"comment"`
+	UserName    string        `bson:"user_name" json:"user_name"`
+	Content     string        `bson:"content" json:"content"`
 	CreateAt    time.Time     `bson:"create_at" json:"create_at"`
 	CreateDay   int           `bson:"create_day" json:"create_day"`
 	CreateMonth int           `bson:"create_month" json:"create_month"`

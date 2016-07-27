@@ -85,6 +85,7 @@ func initConfig() {
 func SetDefault() {
 	viper.SetDefault("host", "0.0.0.0")
 	viper.SetDefault("port", "8089")
+	viper.SetDefault("debug", "false")
 	viper.SetDefault("mongo.host", "127.0.0.1")
 	viper.SetDefault("mongo.port", "27017")
 	viper.SetDefault("mongo.username", "tidy")
@@ -95,6 +96,7 @@ func SetDefault() {
 func BindEnv() {
 	viper.BindEnv("host", "TIDY_HOST")
 	viper.BindEnv("port", "TIDY_PORT")
+	viper.BindEnv("debug", "TIDY_DEBUG")
 
 	// mongo
 	viper.BindEnv("mongo.host", "TIDY_MONGODB_HOST")
