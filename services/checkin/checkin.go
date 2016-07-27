@@ -64,6 +64,12 @@ func (cr *CheckInResource) EditCheckIn(c *gin.Context) {
 	username := c.PostForm("user_name")
 	img := c.PostForm("img")
 	uid := bson.ObjectIdHex(c.PostForm("uid"))
+	var pub bool
+	if c.PostForm("pub") == "false" {
+		pub = false
+	} else {
+		pub = true
+	}
 
 	log.Info("Checkin user_id: " + uid.Hex())
 
@@ -101,7 +107,7 @@ func (cr *CheckInResource) EditCheckIn(c *gin.Context) {
 		Timestamp:   ci.Timestamp,
 		Images:      strings.Split(img, "|"),
 		Deleted:     false,
-		Public:      false,
+		Public:      pub,
 	}
 	//log.Infof("Checkin content: %s", *ciData)
 	// insert updated checkin
@@ -109,6 +115,7 @@ func (cr *CheckInResource) EditCheckIn(c *gin.Context) {
 	if err != nil {
 		panic(err)
 	}
+	log.Debug("edit checkin record: %+v", *ciData)
 
 	// tag old checkin deleted
 	err = cr.CollCI.Update(
@@ -401,10 +408,11 @@ func (cr *CheckInResource) CheckIn(c *gin.Context) {
 	username := c.PostForm("user_name")
 	//log.Infof("Username: %s", username)
 	img := c.PostForm("img")
-	pub := c.PostForm("public")
-	public := true
-	if pub == "false" {
-		public = false
+	var pub bool
+	if c.PostForm("pub") == "false" {
+		pub = false
+	} else {
+		pub = true
 	}
 	log.Info("Checkin user_id: " + uidString)
 	uid := bson.ObjectIdHex(uidString)
@@ -432,7 +440,7 @@ func (cr *CheckInResource) CheckIn(c *gin.Context) {
 		CreateSec:   now.Second(),
 		Timestamp:   now.Unix(),
 		Images:      strings.Split(img, "|"),
-		Public:      public,
+		Public:      pub,
 		//FavorCount:  0,
 		//ThumbCount:  0,
 	}
@@ -491,13 +499,13 @@ func (cr *CheckInResource) changePublic(c *gin.Context, pub bool) {
 	c.JSON(http.StatusOK, "success!")
 }
 
-// MakeCIPublic change the checkin to public
+// MarkCIPublic change the checkin to public
 // Method: PUT
 func (cr *CheckInResource) MarkCIPublic(c *gin.Context) {
 	cr.changePublic(c, true)
 }
 
-// MakeCIPrivate change the checkin to private
+// MarkCIPrivate change the checkin to private
 // Method: PUT
 func (cr *CheckInResource) MarkCIPrivate(c *gin.Context) {
 	cr.changePublic(c, false)
