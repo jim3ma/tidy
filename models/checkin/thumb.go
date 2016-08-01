@@ -9,6 +9,14 @@ import "gopkg.in/mgo.v2/bson"
 type Thumb struct {
 	ID         bson.ObjectId   `bson:"_id" json:"id"`
 	CheckinIDs []bson.ObjectId `bson:"cids" json:"cids"`
-	//Count   int             `bson:"count" json:"count"`
 	//UserIDs []bson.ObjectId `bson:"uids" json:"-"`
+}
+
+func (t *Thumb) HasThumbed(cid bson.ObjectId) bool {
+	for _, v := range t.CheckinIDs {
+		if v == cid {
+			return true
+		}
+	}
+	return false
 }

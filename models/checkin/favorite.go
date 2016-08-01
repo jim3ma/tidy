@@ -11,3 +11,12 @@ type Favorite struct {
 	CheckinIDs []bson.ObjectId `bson:"cids" json:"cids"`
 	//UserID     bson.ObjectId   `bson:"uid" json:"uid"`
 }
+
+func (f *Favorite) HasFavored(cid bson.ObjectId) bool {
+	for _, v := range f.CheckinIDs {
+		if v == cid {
+			return true
+		}
+	}
+	return false
+}

@@ -234,7 +234,15 @@ func (cr *CheckInResource) ThumbCheckIn(c *gin.Context) {
 	///
 	/// TBD check if user had already thumb the ci
 	///
-	err := cr.updateCIThumb(cid, 1)
+	t, err := cr.queryThumb(uid)
+	if err != nil {
+		panic(err)
+	}
+	if t.HasThumbed(cid) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "already thumbed"})
+	}
+
+	err = cr.updateCIThumb(cid, 1)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
 		log.Debugf("update checkin error: %s", err)
@@ -305,6 +313,32 @@ func (cr *CheckInResource) updateCIThumb(cid bson.ObjectId, val int) error {
 			},
 		})
 	return err
+}
+
+func (cr *CheckInResource) queryThumb(uid bson.ObjectId) (*mod.Thumb, error) {
+	var t mod.Thumb
+	query := cr.CollThumb.Find(
+		bson.M{
+			"_id": uid,
+		})
+	if query.Count() == 0 {
+		return t, nil
+	}
+	err := query.One(&t)
+	return &t, err
+}
+
+func (cr *CheckInResource) queryFavor(uid bson.ObjectId) (*mod.Favorite, error) {
+	var f mod.Favorite
+	query := cr.CollFavor.Find(
+		bson.M{
+			"_id": uid,
+		})
+	if query.Count() == 0 {
+		return f, nil
+	}
+	err := query.One(&t)
+	return &f, err
 }
 
 // Mongo collection update type
