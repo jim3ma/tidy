@@ -91,6 +91,8 @@ func SetDefault() {
 	viper.SetDefault("mongo.username", "tidy")
 	viper.SetDefault("mongo.password", "111111")
 	viper.SetDefault("mongo.db", "tidy")
+	viper.SetDefault("redis.addr", "0.0.0.0:6379")
+	viper.SetDefault("redis.passwd", "111111")
 }
 
 func BindEnv() {
@@ -116,4 +118,8 @@ func BindEnv() {
 	viper.BindEnv("mail.authpasswd", "TIDY_MAIL_AUTH_PASSWD")
 	viper.BindEnv("mail.sendfrom", "TIDY_MAIL_SEND_FROM")
 	viper.BindEnv("mail.tlsskipverify", "TIDY_MAIL_TLS_SKIP_VERIFY")
+
+	//redis
+	viper.BindEnv("redis.addr", "TIDY_REDIS_ADDR")
+	viper.BindEnv("redis.passwd", "TIDY_REDIS_PASSWD")
 }

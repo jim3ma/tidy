@@ -6,11 +6,11 @@ import (
 	"encoding/json"
 	"fmt"
 	//"log"
-	log "github.com/Sirupsen/logrus"
-	"gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
 	"strings"
 	"time"
+	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
+	log "github.com/Sirupsen/logrus"
 )
 
 const (
@@ -33,7 +33,7 @@ type (
 		Database string
 		UserName string
 		Password string
-		Timeout  time.Duration
+		Timeout	 time.Duration
 	}
 
 	// mongoManager contains dial and session information.

@@ -15,6 +15,7 @@ import (
 	"sync"
 	"syscall"
 	"time"
+
 	// "github.com/fvbock/uds-go/introspect"
 )
 
@@ -463,7 +464,7 @@ func (srv *endlessServer) fork() (err error) {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.ExtraFiles = files
-	cmd.Env = env
+	cmd.Env =env
 
 	// cmd.SysProcAttr = &syscall.SysProcAttr{
 	// 	Setsid:  true,

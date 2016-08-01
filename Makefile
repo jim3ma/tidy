@@ -22,7 +22,9 @@ build: deps; \
 	cp -vfr keys $(BUILD_DIR)/bin/; \
 	cp -vfr tidy.yaml $(BUILD_DIR)/bin/;
 
-build-docker: #build; \
+#build-docker: build; \
+
+build-docker:
 	TARGET=$(PROJECT):`date +'%Y-%m-%d'`; \
 	docker build -t $${TARGET} .
 

@@ -13,7 +13,7 @@ func main() {
 	r.Use(jsonp.Handler())
 	r.GET("/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
-			"message": "pong",
+		"message": "pong",
 		})
 	})
 	r.Run(":8088") // listen and server on 0.0.0.0:8080
