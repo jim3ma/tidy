@@ -56,6 +56,8 @@ func SendSysMail(mailto string, subject string, body string) error {
 	headers["From"] = from.String()
 	headers["To"] = to.String()
 	headers["Subject"] = subject
+	headers["Content-Type"] = "text/html; charset=\"UTF-8\""
+	//ßheaders["Content-Transfer-Encoding"] = "quoted-printable"
 
 	// Setup message
 	message := ""
