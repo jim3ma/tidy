@@ -91,6 +91,7 @@ func SetDefault() {
 	viper.SetDefault("mongo.username", "tidy")
 	viper.SetDefault("mongo.password", "111111")
 	viper.SetDefault("mongo.db", "tidy")
+	viper.SetDefault("user.auth.expire", "120")
 	viper.SetDefault("redis.addr", "0.0.0.0:6379")
 	viper.SetDefault("redis.passwd", "111111")
 }
@@ -110,6 +111,9 @@ func BindEnv() {
 	// jwt
 	viper.BindEnv("jwt.pubkey", "TIDY_JWT_PUBKEY_PATH")
 	viper.BindEnv("jwt.prikey", "TIDY_JWT_PRIKEY_PATH")
+
+	// user
+	viper.BindEnv("user.auth.expire", "TIDY_USER_EXPIRE")
 
 	// mail
 	viper.BindEnv("mail.host", "TIDY_MAIL_HOST")

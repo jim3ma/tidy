@@ -23,6 +23,7 @@ type UserResource struct {
 	Mongo          *mgo.Session
 	CollUser       *mgo.Collection
 	SystemResource *svcsys.SystemResource
+	AuthExpireTime int
 }
 
 type AuthReponse struct {
@@ -48,6 +49,7 @@ func (ur *UserResource) Init(session *mgo.Session) {
 	db := viper.GetString("mongo.db")
 	ur.Mongo = session
 	ur.CollUser = ur.Mongo.DB(db).C("user")
+	ur.AuthExpireTime = viper.GetInt("user.auth.expire")
 }
 
 // RegisterUser add a user into mongo/tidy/user
@@ -190,7 +192,7 @@ func (ur *UserResource) CreateToken(user *mod.User, login LoginInfo) string {
 			"uid":        user.ID.Hex(),
 			"user_name":  user.UserName,
 			"login_type": strconv.Itoa(login.Type),
-		})
+		}, ur.AuthExpireTime)
 	if err != nil {
 		panic(err)
 	}
@@ -201,24 +203,35 @@ func (ur *UserResource) CreateToken(user *mod.User, login LoginInfo) string {
 // ResetPassword query user infomation and send mail to user
 // Method: POST
 func (ur *UserResource) ResetPassword(c *gin.Context) {
-	username := c.PostForm("user_name")
-	email := c.PostForm("email")
-	user, merr := ur.QueryUserInfoByEmail(email)
-	if merr == nil {
-		authToken := ur.CreateToken(&user[0], LoginInfo{
-			Type:   LTTidyResetPWD,
-			NewReg: false,
-		})
+	//username := c.PostForm("username")
+	//email := c.PostForm("email")
+	account := c.PostForm("account")
+	user, merr := ur.QueryUserInfoByEmail(account)
+	if merr == nil && len(user) == 1 {
+		authToken, err := util.NewToken(
+			map[string]string{
+				"uid":        user[0].ID.Hex(),
+				"user_name":  user[0].UserName,
+				"login_type": strconv.Itoa(LTTidyResetPWD),
+			}, 15)
+		if err != nil {
+			panic(err)
+		}
 		ur.SystemResource.SendResetPWDMail(&user[0], authToken)
 		c.JSON(http.StatusOK, gin.H{})
 		return
 	}
-	user, nerr := ur.QueryUserInfoByName(username)
-	if nerr == nil {
-		authToken := ur.CreateToken(&user[0], LoginInfo{
-			Type:   LTTidyResetPWD,
-			NewReg: false,
-		})
+	user, nerr := ur.QueryUserInfoByName(account)
+	if nerr == nil && len(user) == 1 {
+		authToken, err := util.NewToken(
+			map[string]string{
+				"uid":        user[0].ID.Hex(),
+				"user_name":  user[0].UserName,
+				"login_type": strconv.Itoa(LTTidyResetPWD),
+			}, 15)
+		if err != nil {
+			panic(err)
+		}
 		ur.SystemResource.SendResetPWDMail(&user[0], authToken)
 		c.JSON(http.StatusOK, gin.H{})
 		return
@@ -298,6 +311,8 @@ func (ur *UserResource) queryUserHelp(query bson.M, pdata interface{}) error {
 	return err
 }
 
+// UpdatePortrait set new portrait for special user
+// Method: POST
 func (ur *UserResource) UpdatePortrait(c *gin.Context) {
 	uidString := c.PostForm("uid")
 	uid := bson.ObjectIdHex(uidString)
@@ -319,6 +334,40 @@ func (ur *UserResource) UpdatePortrait(c *gin.Context) {
 		panic(err)
 	}
 	c.JSON(http.StatusOK, "")
+}
+
+// UpdatePassword set new password for special user, and return new auth token
+// Warning: this is used for resetting user password
+//          auth_token expire time must be setting for short time
+// Method: POST
+func (ur *UserResource) UpdatePassword(c *gin.Context) {
+	uidString := c.PostForm("uid")
+	uid := bson.ObjectIdHex(uidString)
+	log.Infof("uid: %s", uidString)
+
+	password := c.PostForm("password")
+
+	err := ur.CollUser.Update(
+		bson.M{
+			"_id": uid,
+		},
+		bson.M{
+			"$set": bson.M{
+				"password": util.Md5Sum(password),
+			},
+		})
+	if err != nil {
+		panic(err)
+	}
+
+	user, _ := ur.QueryUserInfoByID(uidString)
+	newAuthToken := ur.CreateToken(user, LoginInfo{
+		Type:   LTTidyNormal,
+		NewReg: false,
+	})
+	c.JSON(http.StatusOK, gin.H{
+		"auth_token": newAuthToken,
+	})
 }
 
 // Method: POST

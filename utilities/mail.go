@@ -77,7 +77,7 @@ func SendSysMail(mailto string, subject string, body string) error {
 
 	conn, err := tls.Dial("tcp", config.SMTPHost, tlsconfig)
 	if err != nil {
-		log.Errorf("Cann't connect to smtp server, err: %s", err)
+		log.Errorf("mail - cann't connect to smtp server, err: %s", err)
 		return err
 	}
 	//////////////////////////////////////
@@ -91,36 +91,43 @@ func SendSysMail(mailto string, subject string, body string) error {
 
 	c, err := smtp.NewClient(conn, host)
 	if err != nil {
+		log.Errorf("mail - cann't create new smtp client, err: %s", err)
 		return err
 	}
 
 	// Auth
 	if err = c.Auth(auth); err != nil {
+		log.Errorf("mail - auth failed, err: %s", err)
 		return err
 	}
 
 	// To && From
 	if err = c.Mail(from.Address); err != nil {
+		log.Errorf("mail - from address err: %s", err)
 		return err
 	}
 
 	if err = c.Rcpt(to.Address); err != nil {
+		log.Errorf("mail - receiver address err: %s", err)
 		return err
 	}
 
 	// Data
 	w, err := c.Data()
 	if err != nil {
+		log.Errorf("mail - data err: %s", err)
 		return err
 	}
 
 	_, err = w.Write([]byte(message))
 	if err != nil {
+		log.Errorf("mail - write data err: %s", err)
 		return err
 	}
 
 	err = w.Close()
 	if err != nil {
+		log.Errorf("mail - connection closing err: %s", err)
 		return err
 	}
 

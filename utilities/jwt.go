@@ -179,10 +179,11 @@ func appendParameter(c *gin.Context, token *jwt.Token) {
 }
 
 // NewToken generate a jwt token
-func NewToken(values map[string]string) (tokenString string, err error) {
+// parameter expire is the time auth_token expired
+func NewToken(values map[string]string, expire int) (tokenString string, err error) {
 	// create a signer for rsa 256
 	token := jwt.New(jwt.GetSigningMethod("RS256"))
-	log.Infof("NewToken values: %s", values)
+	log.Infof("New token values: %s", values)
 	for key, val := range values {
 		// set our claims
 		token.Claims[key] = val
@@ -190,7 +191,7 @@ func NewToken(values map[string]string) (tokenString string, err error) {
 
 	// set the expire time
 	// see http://tools.ietf.org/html/draft-ietf-oauth-json-web-token-20#section-4.1.4
-	token.Claims["exp"] = time.Now().Add(time.Minute * 120).Unix()
+	token.Claims["exp"] = time.Now().Add(time.Minute * time.Duration(expire)).Unix()
 	tokenString, err = token.SignedString(signKey)
 	log.Infof("New token: %s", tokenString)
 	return

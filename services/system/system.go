@@ -1,11 +1,11 @@
 package system
 
 import (
+	log "github.com/Sirupsen/logrus"
 	mod "github.com/jim3mar/tidy/models/user"
 	util "github.com/jim3mar/tidy/utilities"
 	"github.com/spf13/viper"
 	"gopkg.in/mgo.v2"
-	//log "github.com/Sirupsen/logrus"
 )
 
 type SystemResource struct {
@@ -21,9 +21,10 @@ func (sr *SystemResource) Init(session *mgo.Session) {
 	sr.CollFeedback = sr.Mongo.DB(db).C("feedback")
 }
 
-func (sr *SystemResource) SendResetPWDMail(user *mod.User, auth_token string) bool {
+func (sr *SystemResource) SendResetPWDMail(user *mod.User, authToken string) bool {
 	subject := "reset password"
-	body := "click here"
+	body := "<a href=\"" + authToken + "\">click here</a>"
+	log.Debugf("Send resetting password email to %s, auth_token: %s", user.EMail, authToken)
 	util.SendSysMail(user.EMail, subject, body)
 	return false
 }

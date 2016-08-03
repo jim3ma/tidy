@@ -145,6 +145,7 @@ func (s *Service) Run(cfg Config) error {
 		user := v1.Group("/user")
 		user.POST("/uploadimg", svcCR.UploadImg)
 		user.POST("/register", svcUR.RegisterUser)
+		user.POST("/reset_password", svcUR.ResetPassword)
 		user.GET("/query", svcUR.RegisterQuery)
 		user.GET("/login", svcUR.AuthWithPassword)
 
@@ -162,6 +163,7 @@ func (s *Service) Run(cfg Config) error {
 		updateSetting.Use(util.JWTHandler())
 		updateSetting.POST("", svcUR.UpdateSetting)
 		updateSetting.POST("/portrait", svcUR.UpdatePortrait)
+		updateSetting.POST("/password", svcUR.UpdatePassword)
 
 		/////////////////////////////////////////
 		// static files
