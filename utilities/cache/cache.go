@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/fatih/structs"
 	"github.com/garyburd/redigo/redis"
 	maps "github.com/mitchellh/mapstructure"
@@ -20,9 +21,12 @@ func newPool(server, password string) *redis.Pool {
 			if err != nil {
 				return nil, err
 			}
-			if _, err := c.Do("AUTH", password); err != nil {
-				c.Close()
-				return nil, err
+			if password != "" {
+				if _, err := c.Do("AUTH", password); err != nil {
+					log.Errorf("Create redis pool error: %s", err)
+					c.Close()
+					return nil, err
+				}
 			}
 			return c, err
 		},
@@ -43,6 +47,7 @@ var redisPassword string
 func InitCacheConfig() {
 	redisServer = viper.GetString("redis.addr")
 	redisPassword = viper.GetString("redis.passwd")
+	log.Debugf("Redis server: %s, password: %s", redisServer, redisPassword)
 	Pool = newPool(redisServer, redisPassword)
 	//log.Infof("current mail config: %+v", config)
 }

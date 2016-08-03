@@ -12,6 +12,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/gin-gonic/gin"
 	mod "github.com/jim3mar/tidy/models/user"
+	svcsys "github.com/jim3mar/tidy/services/system"
 	util "github.com/jim3mar/tidy/utilities"
 	"github.com/spf13/viper"
 	"gopkg.in/mgo.v2"
@@ -19,8 +20,9 @@ import (
 )
 
 type UserResource struct {
-	Mongo    *mgo.Session
-	CollUser *mgo.Collection
+	Mongo          *mgo.Session
+	CollUser       *mgo.Collection
+	SystemResource *svcsys.SystemResource
 }
 
 type AuthReponse struct {
@@ -37,8 +39,9 @@ type LoginInfo struct {
 // Login type
 const (
 	LTUnknow = iota
-	LTTidy
+	LTTidyNormal
 	LTWeChat
+	LTTidyResetPWD
 )
 
 func (ur *UserResource) Init(session *mgo.Session) {
@@ -48,6 +51,7 @@ func (ur *UserResource) Init(session *mgo.Session) {
 }
 
 // RegisterUser add a user into mongo/tidy/user
+// Method: POST
 // return current timestamp if success
 func (ur *UserResource) RegisterUser(c *gin.Context) {
 	now := time.Now()
@@ -85,7 +89,7 @@ func (ur *UserResource) RegisterUser(c *gin.Context) {
 	}
 	ur.CreateUser(user)
 	ur.RtAuthToken(c, user, LoginInfo{
-		Type:   LTTidy,
+		Type:   LTTidyNormal,
 		NewReg: true,
 	})
 	if email != "" {
@@ -117,6 +121,8 @@ func (ur *UserResource) IsAccountExist(username string, email string) bool {
 	return false
 }
 
+// RegisterQuery query whether new username and new email existed
+// Method: GET
 func (ur *UserResource) RegisterQuery(c *gin.Context) {
 	querytype := c.DefaultQuery("type", "username")
 	switch querytype {
@@ -173,7 +179,7 @@ func (ur *UserResource) AuthWithPassword(c *gin.Context) {
 		return
 	}
 	ur.RtAuthToken(c, user, LoginInfo{
-		Type:   LTTidy,
+		Type:   LTTidyNormal,
 		NewReg: true,
 	})
 }
@@ -190,6 +196,34 @@ func (ur *UserResource) CreateToken(user *mod.User, login LoginInfo) string {
 	}
 
 	return tokenString
+}
+
+// ResetPassword query user infomation and send mail to user
+// Method: POST
+func (ur *UserResource) ResetPassword(c *gin.Context) {
+	username := c.PostForm("user_name")
+	email := c.PostForm("email")
+	user, merr := ur.QueryUserInfoByEmail(email)
+	if merr == nil {
+		authToken := ur.CreateToken(&user[0], LoginInfo{
+			Type:   LTTidyResetPWD,
+			NewReg: false,
+		})
+		ur.SystemResource.SendResetPWDMail(&user[0], authToken)
+		c.JSON(http.StatusOK, gin.H{})
+		return
+	}
+	user, nerr := ur.QueryUserInfoByName(username)
+	if nerr == nil {
+		authToken := ur.CreateToken(&user[0], LoginInfo{
+			Type:   LTTidyResetPWD,
+			NewReg: false,
+		})
+		ur.SystemResource.SendResetPWDMail(&user[0], authToken)
+		c.JSON(http.StatusOK, gin.H{})
+		return
+	}
+	c.JSON(http.StatusBadRequest, gin.H{})
 }
 
 // RtAuthToken create a new token with special user,
@@ -287,6 +321,7 @@ func (ur *UserResource) UpdatePortrait(c *gin.Context) {
 	c.JSON(http.StatusOK, "")
 }
 
+// Method: POST
 func (ur *UserResource) UpdateSetting(c *gin.Context) {
 	tp, err := strconv.Atoi(c.PostForm("login_type"))
 	if err != nil {
@@ -295,7 +330,7 @@ func (ur *UserResource) UpdateSetting(c *gin.Context) {
 	}
 	log.Infof("login type: %d", tp)
 	switch tp {
-	case LTTidy:
+	case LTTidyNormal:
 		ur.updateSettingTidy(c)
 	case LTWeChat:
 		ur.updateSetting(c, true)

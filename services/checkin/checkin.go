@@ -240,6 +240,7 @@ func (cr *CheckInResource) ThumbCheckIn(c *gin.Context) {
 	}
 	if t.HasThumbed(cid) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "already thumbed"})
+		return
 	}
 
 	err = cr.updateCIThumb(cid, 1)
@@ -270,7 +271,16 @@ func (cr *CheckInResource) UnThumbCheckIn(c *gin.Context) {
 	///
 	/// TBD check if user had already thumb the ci
 	///
-	err := cr.updateCIThumb(cid, -1)
+	t, err := cr.queryThumb(uid)
+	if err != nil {
+		panic(err)
+	}
+	if !t.HasThumbed(cid) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "already thumbed"})
+		return
+	}
+
+	err = cr.updateCIThumb(cid, -1)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
 		log.Debugf("update checkin error: %s", err)
@@ -321,8 +331,8 @@ func (cr *CheckInResource) queryThumb(uid bson.ObjectId) (*mod.Thumb, error) {
 		bson.M{
 			"_id": uid,
 		})
-	if query.Count() == 0 {
-		return t, nil
+	if c, _ := query.Count(); c == 0 {
+		return &t, nil
 	}
 	err := query.One(&t)
 	return &t, err
@@ -334,10 +344,10 @@ func (cr *CheckInResource) queryFavor(uid bson.ObjectId) (*mod.Favorite, error) 
 		bson.M{
 			"_id": uid,
 		})
-	if query.Count() == 0 {
-		return f, nil
+	if c, _ := query.Count(); c == 0 {
+		return &f, nil
 	}
-	err := query.One(&t)
+	err := query.One(&f)
 	return &f, err
 }
 
@@ -386,7 +396,16 @@ func (cr *CheckInResource) FavorCheckIn(c *gin.Context) {
 	///
 	/// TBD check if user had already favor the ci
 	///
-	err := cr.updateCIFavor(cid, 1)
+	f, err := cr.queryFavor(uid)
+	if err != nil {
+		panic(err)
+	}
+	if f.HasFavored(cid) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "already thumbed"})
+		return
+	}
+
+	err = cr.updateCIFavor(cid, 1)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
 		log.Debugf("update checkin error: %s", err)
@@ -414,7 +433,16 @@ func (cr *CheckInResource) UnFavorCheckIn(c *gin.Context) {
 	///
 	/// TBD check if user had already favor the ci
 	///
-	err := cr.updateCIFavor(cid, -1)
+	f, err := cr.queryFavor(uid)
+	if err != nil {
+		panic(err)
+	}
+	if !f.HasFavored(cid) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "already thumbed"})
+		return
+	}
+
+	err = cr.updateCIFavor(cid, -1)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
 		log.Debugf("update checkin error: %s", err)

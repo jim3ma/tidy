@@ -18,6 +18,7 @@ import (
 	sr "github.com/jim3mar/tidy/services/system"
 	ur "github.com/jim3mar/tidy/services/user"
 	util "github.com/jim3mar/tidy/utilities"
+	"github.com/jim3mar/tidy/utilities/cache"
 	//"encoding/json"
 	//"time"
 )
@@ -67,6 +68,8 @@ func (s *Service) getMgoSession(cfg Config) (*mgo.Session, error) {
 }
 
 func (s *Service) Run(cfg Config) error {
+	go cache.InitCacheConfig()
+
 	util.InitMailConfig()
 	mgoSession, err := s.getMgoSession(cfg)
 
@@ -80,6 +83,7 @@ func (s *Service) Run(cfg Config) error {
 
 	svcUR := &ur.UserResource{}
 	svcUR.Init(mgoSession)
+	svcUR.SystemResource = svcSR
 
 	svcCR := &cr.CheckInResource{}
 	svcCR.Init(mgoSession)
