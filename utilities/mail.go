@@ -17,6 +17,7 @@ type MailConfig struct {
 	AuthMailAddr  string
 	AuthPassword  string
 	SendFrom      string
+	SendName      string
 	SMTPHost      string
 	TLSSkipVerify bool
 }
@@ -32,29 +33,30 @@ func InitMailConfig() {
 	config.SMTPHost = fmt.Sprintf("%s:%s",
 		viper.GetString("mail.host"), viper.GetString("mail.port"))
 	config.SendFrom = viper.GetString("mail.sendfrom")
+	config.SendName = viper.GetString("mail.sendname")
 	config.TLSSkipVerify = viper.GetBool("mail.tlsskipverify")
 	log.Infof("current mail config: %+v", config)
 }
 
 //SendSysMail use global variable config for default smtp settings.
 //just put mailto, subject, and body
-func SendSysMail(mailto string, subject string, body string) error {
+func SendSysMail(mailto mail.Address, subject string, body string) error {
 
 	from := mail.Address{
-		Name:    "",
+		Name:    config.SendName,
 		Address: config.SendFrom,
 	}
-	to := mail.Address{
-		Name:    "",
-		Address: mailto,
-	}
+	//to := mail.Address{
+	//	Name:    "",
+	//	Address: mailto,
+	//}
 	//subject := "This is the email subject"
 	//body := "This is a body.\n With two lines."
 
 	// Setup headers
 	headers := make(map[string]string)
 	headers["From"] = from.String()
-	headers["To"] = to.String()
+	headers["To"] = mailto.String()
 	headers["Subject"] = subject
 	headers["Content-Type"] = "text/html; charset=\"UTF-8\""
 	//ßheaders["Content-Transfer-Encoding"] = "quoted-printable"
@@ -109,7 +111,7 @@ func SendSysMail(mailto string, subject string, body string) error {
 		return err
 	}
 
-	if err = c.Rcpt(to.Address); err != nil {
+	if err = c.Rcpt(mailto.Address); err != nil {
 		log.Errorf("mail - receiver address err: %s", err)
 		return err
 	}

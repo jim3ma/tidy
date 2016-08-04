@@ -17,7 +17,8 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
-func (sr *SystemResource) CreateFeedback(c *gin.Context) {
+// CreateFeedback insert a new feedback into mongo
+func (sr *SysResource) CreateFeedback(c *gin.Context) {
 	now := time.Now()
 	content := c.PostForm("content")
 	username := c.PostForm("user_name")

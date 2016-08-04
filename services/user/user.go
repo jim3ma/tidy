@@ -5,6 +5,7 @@ import (
 	"fmt"
 	//"log"
 	"net/http"
+	"net/mail"
 	"strconv"
 	"strings"
 	"time"
@@ -22,7 +23,7 @@ import (
 type UserResource struct {
 	Mongo          *mgo.Session
 	CollUser       *mgo.Collection
-	SystemResource *svcsys.SystemResource
+	SystemResource *svcsys.SysResource
 	AuthExpireTime int
 }
 
@@ -95,7 +96,11 @@ func (ur *UserResource) RegisterUser(c *gin.Context) {
 		NewReg: true,
 	})
 	if email != "" {
-		err := util.SendSysMail(email, fmt.Sprintf("Hello %s", username), "Welcome to Tidy")
+		mailto := mail.Address{
+			Name:    username,
+			Address: email,
+		}
+		err := util.SendSysMail(mailto, fmt.Sprintf("Hello %s", username), "Welcome to Tidy")
 		if err != nil {
 			log.Errorf("Failed send email due to error: %s", err)
 		}

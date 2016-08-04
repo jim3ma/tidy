@@ -68,8 +68,8 @@ func initConfig() {
 		viper.SetConfigFile(cfgFile)
 	}
 
-	SetDefault()
-	BindEnv()
+	setDefault()
+	bindEnv()
 
 	viper.SetConfigName(".tidy") // name of config file (without extension)
 	viper.AddConfigPath("$HOME") // adding home directory as first search path
@@ -82,7 +82,7 @@ func initConfig() {
 	}
 }
 
-func SetDefault() {
+func setDefault() {
 	viper.SetDefault("host", "0.0.0.0")
 	viper.SetDefault("port", "8089")
 	viper.SetDefault("debug", "false")
@@ -94,9 +94,10 @@ func SetDefault() {
 	viper.SetDefault("user.auth.expire", "120")
 	viper.SetDefault("redis.addr", "0.0.0.0:6379")
 	viper.SetDefault("redis.passwd", "111111")
+	viper.SetDefault("mail.sendname", "no-reply")
 }
 
-func BindEnv() {
+func bindEnv() {
 	viper.BindEnv("host", "TIDY_HOST")
 	viper.BindEnv("port", "TIDY_PORT")
 	viper.BindEnv("debug", "TIDY_DEBUG")
@@ -121,6 +122,7 @@ func BindEnv() {
 	viper.BindEnv("mail.authaddr", "TIDY_MAIL_AUTH_ADDR")
 	viper.BindEnv("mail.authpasswd", "TIDY_MAIL_AUTH_PASSWD")
 	viper.BindEnv("mail.sendfrom", "TIDY_MAIL_SEND_FROM")
+	viper.BindEnv("mail.sendname", "TIDY_MAIL_SEND_NAME")
 	viper.BindEnv("mail.tlsskipverify", "TIDY_MAIL_TLS_SKIP_VERIFY")
 
 	//redis

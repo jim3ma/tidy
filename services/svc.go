@@ -78,7 +78,7 @@ func (s *Service) Run(cfg Config) error {
 	}
 	defer mgoSession.Close()
 
-	svcSR := &sr.SystemResource{}
+	svcSR := &sr.SysResource{}
 	svcSR.Init(mgoSession)
 
 	svcUR := &ur.UserResource{}

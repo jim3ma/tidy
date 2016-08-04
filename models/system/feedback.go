@@ -6,6 +6,7 @@ import (
 	//"time"
 )
 
+// Feedback is used for system bug report
 type Feedback struct {
 	ID        bson.ObjectId `bson:"_id" json:"id"`
 	UserName  string        `bson:"username" json:"user_name"`
