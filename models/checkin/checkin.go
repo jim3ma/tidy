@@ -11,6 +11,7 @@ type CheckIn struct {
 	ID           bson.ObjectId `bson:"_id" json:"id"`
 	UserID       bson.ObjectId `bson:"user_id" json:"user_id"`
 	UserName     string        `bson:"user_name" json:"user_name"`
+	Portrait     string        `bson:",omitempty" json:"portrait"`
 	Content      string        `bson:"content" json:"content"`
 	CreateAt     time.Time     `bson:"create_at" json:"create_at"`
 	CreateDay    int           `bson:"create_day" json:"create_day"`

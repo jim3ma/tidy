@@ -20,3 +20,7 @@ mail:
   # authpasswd:
   # sendfrom:
   tlsskipverify: false
+
+redis:
+  addr: redis:6379
+  passwd: iL0v3T16y

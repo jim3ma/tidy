@@ -49,7 +49,6 @@ func InitCacheConfig() {
 	redisPassword = viper.GetString("redis.passwd")
 	log.Debugf("Redis server: %s, password: %s", redisServer, redisPassword)
 	Pool = newPool(redisServer, redisPassword)
-	//log.Infof("current mail config: %+v", config)
 }
 
 func dummy() {

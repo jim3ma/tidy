@@ -681,7 +681,7 @@ func (cr *CheckInResource) ListCheckIn(c *gin.Context) {
 	//col.Find(nil).All(&ci)
 	//log.Infof("%s", ci)
 
-	// update personal thumbed and favored infomation
+	// update thumbed and favored infomation
 	if tp != ListPersonal {
 		uid := bson.ObjectIdHex(c.DefaultQuery("uid", ""))
 		cr.updateQueriedCIs(uid, ci)
@@ -708,6 +708,11 @@ func (cr *CheckInResource) updateQueriedCIs(uid bson.ObjectId, ci []mod.CheckIn)
 
 	//log.Debugf("before updating: %+v", ci)
 	for i := range ci {
+		ava, err := cr.UserResource.QueryAvatar(ci[i].UserID)
+		if err == nil {
+			ci[i].Portrait = ava
+		}
+
 		///////////////////////////////////////
 		/// TBD
 		///////////////////////////////////////
