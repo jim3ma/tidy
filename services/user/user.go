@@ -100,10 +100,12 @@ func (ur *UserResource) RegisterUser(c *gin.Context) {
 			Name:    username,
 			Address: email,
 		}
-		err := util.SendSysMail(mailto, fmt.Sprintf("Hello %s", username), "Welcome to Tidy")
-		if err != nil {
-			log.Errorf("Failed send email due to error: %s", err)
-		}
+		go func(mailto mail.Address, username string) {
+			err := util.SendSysMail(mailto, fmt.Sprintf("Hello %s", username), "Welcome to Tidy")
+			if err != nil {
+				log.Errorf("Failed send email due to error: %s", err)
+			}
+		}(mailto, username)
 	}
 }
 

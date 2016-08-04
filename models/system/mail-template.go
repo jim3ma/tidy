@@ -20,12 +20,21 @@ type MailTemplate struct {
 
 // GenerateContent execute template and return content and error
 func (m *MailTemplate) GenerateContent(data interface{}) (string, error) {
-	tmpl := template.Must(template.New(strconv.Itoa(m.Type)).Parse(m.Content))
+	return m.generateHelp(data, m.Content)
+}
+
+// GenerateSubject execute template and return subject and error
+func (m *MailTemplate) GenerateSubject(data interface{}) (string, error) {
+	return m.generateHelp(data, m.Subject)
+}
+
+func (m *MailTemplate) generateHelp(data interface{}, field string) (string, error) {
+	tmpl := template.Must(template.New("subject_" + strconv.Itoa(m.Type)).Parse(field))
 	var buf bytes.Buffer
 	err := tmpl.Execute(&buf, data)
 	if err != nil {
 		log.Errorf("Execute template error: %s", err)
-		log.Errorf("template type: %d, content: %s, version: %d", m.Type, m.Content, m.Version)
+		log.Errorf("template type: %d, field: %s, version: %d", m.Type, field, m.Version)
 		return "", err
 	}
 	return buf.String(), nil

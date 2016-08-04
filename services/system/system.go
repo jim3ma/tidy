@@ -54,11 +54,16 @@ func (sr *SysResource) sendMail(mailType int, user *mod.User, data interface{}) 
 		// TBD
 		return false
 	}
+	subject, err := mailtmpl.GenerateSubject(data)
+	if err != nil {
+		// TBD
+		return false
+	}
 	mailto := mail.Address{
 		Name:    user.UserName,
 		Address: user.EMail,
 	}
-	err = util.SendSysMail(mailto, mailtmpl.Subject, content)
+	err = util.SendSysMail(mailto, subject, content)
 	if err != nil {
 		return false
 	}
