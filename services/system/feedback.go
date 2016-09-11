@@ -10,8 +10,8 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/gin-gonic/gin"
-	ms "github.com/jim3mar/tidy/models/system"
-	//util "github.com/jim3mar/tidy/utilities"
+	ms "github.com/jim3ma/tidy/models/system"
+	//util "github.com/jim3ma/tidy/utilities"
 	//"github.com/spf13/viper"
 	//"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"

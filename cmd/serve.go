@@ -23,9 +23,9 @@ import (
 	"time"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/jim3mar/basicmgo/mongo"
-	"github.com/jim3mar/tidy/services"
-	"github.com/jim3mar/tidy/utilities"
+	"github.com/jim3ma/basicmgo/mongo"
+	"github.com/jim3ma/tidy/services"
+	"github.com/jim3ma/tidy/utilities"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )

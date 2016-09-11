@@ -14,7 +14,7 @@
 
 package main
 
-import "github.com/jim3mar/tidy/cmd"
+import "github.com/jim3ma/tidy/cmd"
 
 func main() {
 	cmd.Execute()

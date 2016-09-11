@@ -5,8 +5,8 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/garyburd/redigo/redis"
-	mod "github.com/jim3mar/tidy/models/user"
-	"github.com/jim3mar/tidy/utilities/cache"
+	mod "github.com/jim3ma/tidy/models/user"
+	"github.com/jim3ma/tidy/utilities/cache"
 	"gopkg.in/mgo.v2/bson"
 )
 

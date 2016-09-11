@@ -9,10 +9,10 @@ import (
 
 	mpo "github.com/chanxuehong/wechat.v2/mp/oauth2"
 	o "github.com/chanxuehong/wechat.v2/oauth2"
-	mu "github.com/jim3mar/tidy/models/user"
-	mwu "github.com/jim3mar/tidy/models/wechat"
-	svcuser "github.com/jim3mar/tidy/services/user"
-	util "github.com/jim3mar/tidy/utilities"
+	mu "github.com/jim3ma/tidy/models/user"
+	mwu "github.com/jim3ma/tidy/models/wechat"
+	svcuser "github.com/jim3ma/tidy/services/user"
+	util "github.com/jim3ma/tidy/utilities"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/gin-gonic/gin"

@@ -11,9 +11,9 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/gin-gonic/gin"
-	mod "github.com/jim3mar/tidy/models/checkin"
-	//muser "github.com/jim3mar/tidy/models/user"
-	svcuser "github.com/jim3mar/tidy/services/user"
+	mod "github.com/jim3ma/tidy/models/checkin"
+	//muser "github.com/jim3ma/tidy/models/user"
+	svcuser "github.com/jim3ma/tidy/services/user"
 	"github.com/spf13/viper"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"

@@ -3,7 +3,7 @@ package user
 import (
 	"time"
 
-	ci "github.com/jim3mar/tidy/models/checkin"
+	ci "github.com/jim3ma/tidy/models/checkin"
 	"github.com/spf13/viper"
 	"gopkg.in/mgo.v2/bson"
 )

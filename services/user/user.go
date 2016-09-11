@@ -12,9 +12,9 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/gin-gonic/gin"
-	mod "github.com/jim3mar/tidy/models/user"
-	svcsys "github.com/jim3mar/tidy/services/system"
-	util "github.com/jim3mar/tidy/utilities"
+	mod "github.com/jim3ma/tidy/models/user"
+	svcsys "github.com/jim3ma/tidy/services/system"
+	util "github.com/jim3ma/tidy/utilities"
 	"github.com/spf13/viper"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"

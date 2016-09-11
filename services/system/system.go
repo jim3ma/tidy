@@ -6,9 +6,9 @@ import (
 	"text/template"
 
 	log "github.com/Sirupsen/logrus"
-	modsys "github.com/jim3mar/tidy/models/system"
-	mod "github.com/jim3mar/tidy/models/user"
-	util "github.com/jim3mar/tidy/utilities"
+	modsys "github.com/jim3ma/tidy/models/system"
+	mod "github.com/jim3ma/tidy/models/user"
+	util "github.com/jim3ma/tidy/utilities"
 	"github.com/spf13/viper"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
