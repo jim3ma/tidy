@@ -1,4 +1,4 @@
-package: github.com/jim3mar/tidy
+package: github.com/jim3ma/tidy
 import:
 - package: github.com/BurntSushi/toml
   version: f0aeabca5a127c4078abb8c8d64298b147264b55
@@ -39,14 +39,14 @@ import:
   version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
 - package: github.com/itsjamie/gin-cors
   version: 97b4a9da79331dfa2b6d35f4cdd1e50f5148859c
-- package: github.com/jim3mar/basicmgo
-  version: 45ded5778bc7e3a19355e868c232a7471a0ebed8
+- package: github.com/jim3ma/basicmgo
+  version: dd8cc92db5d814259536aa03852d0c68ed1a66f7
   subpackages:
   - mongo
-- package: github.com/jim3mar/endless
+- package: github.com/jim3ma/endless
   version: 870b802d484dc579723e361e2818b6a1d9dd9ff1
-- package: github.com/jim3mar/gin-jsonp
-  version: 0c4a9edb68c30cce16ebb5c47673b2a048ae2a3e
+- package: github.com/jim3ma/gin-jsonp
+  version: 513b28d08f1c77e9910712b8213f0dc9e4d8fa39
 - package: github.com/kr/pretty
   version: add1dbc86daf0f983cd4a48ceb39deb95c729b67
 - package: github.com/kr/text
