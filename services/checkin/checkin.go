@@ -28,6 +28,7 @@ type CheckInResource struct {
 	CollComments *mgo.Collection
 	CollSComment *mgo.Collection
 	UserResource *svcuser.UserResource
+	ImageFolder  string
 }
 
 func (cr *CheckInResource) Init(session *mgo.Session) {
@@ -39,6 +40,7 @@ func (cr *CheckInResource) Init(session *mgo.Session) {
 	cr.CollFavor = cr.Mongo.DB(db).C("ci_favor")
 	cr.CollComments = cr.Mongo.DB(db).C("ci_comments")
 	cr.CollSComment = cr.Mongo.DB(db).C("ci_comment")
+	cr.ImageFolder = viper.GetString("upload.image")
 }
 
 func (cr *CheckInResource) canEditCheckIn(uid bson.ObjectId, cid bson.ObjectId) bool {
@@ -689,6 +691,13 @@ func (cr *CheckInResource) ListCheckIn(c *gin.Context) {
 	c.JSON(http.StatusOK, ci)
 }
 
+func (cr *CheckInResource) queryCheckInByCID(cid bson.ObjectId) (ci mod.CheckIn, err error) {
+	err = cr.CollCI.Find(bson.M{
+		"_id": cid,
+	}).One(&ci)
+	return ci, err
+}
+
 func (cr *CheckInResource) updateQueriedCIs(uid bson.ObjectId, ci []mod.CheckIn) {
 	///////////////////////////////////////
 	/// TBD
@@ -751,7 +760,7 @@ func (cr *CheckInResource) UploadImg(c *gin.Context) {
 	guid := bson.NewObjectId().Hex()
 	filename := guid + "." + fileext
 	log.Debug(filename)
-	out, err := os.Create("./tmp/" + filename)
+	out, err := os.Create(cr.ImageFolder + filename)
 	if err != nil {
 		log.Fatal(err)
 	}

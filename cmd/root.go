@@ -86,6 +86,8 @@ func setDefault() {
 	viper.SetDefault("host", "0.0.0.0")
 	viper.SetDefault("port", "8089")
 	viper.SetDefault("debug", "false")
+	viper.SetDefault("upload.image", "./tmp/")
+	viper.SetDefault("upload.portrait", "./tmp/")
 	viper.SetDefault("mongo.host", "127.0.0.1")
 	viper.SetDefault("mongo.port", "27017")
 	viper.SetDefault("mongo.username", "tidy")
@@ -101,6 +103,9 @@ func bindEnv() {
 	viper.BindEnv("host", "TIDY_HOST")
 	viper.BindEnv("port", "TIDY_PORT")
 	viper.BindEnv("debug", "TIDY_DEBUG")
+
+	// upload folder
+	viper.BindEnv("upload.image", "TIDY_UPLOAD_IMAGE")
 
 	// mongo
 	viper.BindEnv("mongo.host", "TIDY_MONGODB_HOST")

@@ -2,6 +2,11 @@ host: 0.0.0.0
 port: 8089
 debug: false
 
+# upload folder
+upload:
+  portrait: ./tmp/
+  img: ./tmp/
+
 jwt:
   pubkey: keys/app.rsa.pub
   prikey: keys/app.rsa

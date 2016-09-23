@@ -19,6 +19,7 @@ import (
 	ur "github.com/jim3ma/tidy/services/user"
 	util "github.com/jim3ma/tidy/utilities"
 	"github.com/jim3ma/tidy/utilities/cache"
+	"github.com/spf13/viper"
 	//"encoding/json"
 	//"time"
 )
@@ -167,7 +168,7 @@ func (s *Service) Run(cfg Config) error {
 
 		/////////////////////////////////////////
 		// static files
-		v1.Static("/static/images", "./tmp")
+		v1.Static("/static/images", viper.GetString("upload.image"))
 		//v1.Static("/static", ".")
 	}
 
